@@ -7,83 +7,43 @@
       @logout="handleLogout"
     />
 
-    <!-- Sidebar and Main Content -->
-    <div class="flex pt-16">
+    <div class="flex">
       <!-- Sidebar -->
       <Sidebar 
-        :open="sidebarOpen" 
+        :open="sidebarOpen"
         :user="user"
         @close="sidebarOpen = false"
       />
 
-      <!-- Main Content Area -->
+      <!-- Main Content -->
       <main 
-        class="flex-1 transition-all duration-300"
+        class="flex-1 p-6 transition-all duration-300"
         :class="sidebarOpen ? 'lg:ml-64' : 'lg:ml-16'"
       >
-        <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <slot />
-        </div>
+        <slot />
       </main>
     </div>
-
-    <!-- Mobile Sidebar Overlay -->
-    <div
-      v-if="sidebarOpen"
-      class="fixed inset-0 bg-gray-600 bg-opacity-75 z-20 lg:hidden"
-      @click="sidebarOpen = false"
-    ></div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
-import { router } from '@inertiajs/vue3';
+import { ref, computed, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
+import { useAuthStore } from '@/stores/auth';
 import Navbar from '@/Components/Navbar.vue';
 import Sidebar from '@/Components/Sidebar.vue';
 
-// Props
-const props = defineProps({
-  user: {
-    type: Object,
-    default: null,
-  },
-});
+const router = useRouter();
+const authStore = useAuthStore();
+const user = computed(() => authStore.user);
 
 // State
 const sidebarOpen = ref(true);
 
 // Handle logout
 const handleLogout = async () => {
-  try {
-    const token = localStorage.getItem('auth_token');
-    
-    const response = await fetch('/api/auth/logout', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        'Authorization': `Bearer ${token}`,
-      },
-    });
-
-    // Clear local storage
-    localStorage.removeItem('auth_token');
-    localStorage.removeItem('user');
-
-    // Redirect to login
-    router.visit('/login', {
-      replace: true,
-    });
-  } catch (error) {
-    console.error('Logout error:', error);
-    // Force redirect even on error
-    localStorage.removeItem('auth_token');
-    localStorage.removeItem('user');
-    router.visit('/login', {
-      replace: true,
-    });
-  }
+  await authStore.logout();
+  router.push('/login');
 };
 
 // Responsive sidebar behavior
