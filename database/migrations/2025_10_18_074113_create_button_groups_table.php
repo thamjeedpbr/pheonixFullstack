@@ -13,12 +13,13 @@ return new class extends Migration
             $table->string('name')->nullable();
             $table->string('display_order');
             $table->foreignId('process_id')->nullable()->constrained('processes')->nullOnDelete();
-            $table->foreignId('button_id')->nullable()->constrained('buttons')->nullOnDelete();
+            $table->unsignedBigInteger('button_id')->nullable(); // No FK constraint yet - will add after buttons table created
             $table->boolean('status')->default(true);
             $table->foreignId('created_by_id')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
             
             $table->index(['status', 'display_order']);
+            $table->index('button_id'); // Add index for performance
         });
     }
 

@@ -13,11 +13,12 @@ return new class extends Migration
             $table->string('sheet_id')->unique();
             $table->string('sheet_size');
             $table->boolean('status')->default(true);
-            $table->foreignId('machine_id')->nullable()->constrained('machines')->nullOnDelete();
+            $table->unsignedBigInteger('machine_id')->nullable(); // No FK yet
             $table->foreignId('created_by_id')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
             
             $table->index('status');
+            $table->index('machine_id');
         });
     }
 
