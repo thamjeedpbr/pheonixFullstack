@@ -1,27 +1,48 @@
 <?php
 
-use App\Http\Controllers\ProfileController;
-use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
+/*
+|--------------------------------------------------------------------------
+| Web Routes
+|--------------------------------------------------------------------------
+|
+| Here is where you can register web routes for your application. These
+| routes are loaded by the RouteServiceProvider and all of them will
+| be assigned to the "web" middleware group. Make something great!
+|
+*/
+
+// Redirect root to login
 Route::get('/', function () {
-    return Inertia::render('Welcome', [
-        'canLogin' => Route::has('login'),
-        'canRegister' => Route::has('register'),
-        'laravelVersion' => Application::VERSION,
-        'phpVersion' => PHP_VERSION,
-    ]);
+    if (auth()->check()) {
+        return redirect('/dashboard');
+    }
+    return redirect('/login');
 });
 
-Route::get('/dashboard', function () {
-    return Inertia::render('Dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
-
-Route::middleware('auth')->group(function () {
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+// Guest routes (not authenticated)
+Route::middleware('guest')->group(function () {
+    Route::get('/login', function () {
+        return Inertia::render('Auth/Login');
+    })->name('login');
 });
 
-require __DIR__.'/auth.php';
+// Authenticated routes
+Route::middleware(['web'])->group(function () {
+    
+    // Dashboard (check token via JavaScript, not server-side)
+    Route::get('/dashboard', function () {
+        // For Inertia, we'll pass null user and let frontend handle auth
+        return Inertia::render('Dashboard');
+    })->name('dashboard');
+
+    // Profile routes (to be created later)
+    Route::get('/profile', function () {
+        return Inertia::render('Profile/Edit');
+    })->name('profile.edit');
+
+    // Other routes will be added as we develop more modules
+    
+});
