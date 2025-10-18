@@ -257,7 +257,7 @@ const fetchUsers = async () => {
 
     if (response.ok) {
       const data = await response.json();
-      users.value = data.data.data || [];
+      users.value = data.data || [];
     }
   } catch (error) {
     console.error('Failed to fetch users:', error);
