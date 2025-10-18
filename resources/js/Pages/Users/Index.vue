@@ -10,7 +10,8 @@
         <button
           v-if="canCreate"
           @click="openCreateModal"
-          class="inline-flex items-center justify-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700"
+          type="button"
+          class="inline-flex items-center justify-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
         >
           <svg class="mr-2 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
@@ -59,6 +60,7 @@
 
           <div class="flex items-end">
             <button
+              type="button"
               @click="resetFilters"
               class="w-full rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
             >
@@ -70,6 +72,27 @@
 
       <!-- Table -->
       <div class="overflow-hidden rounded-lg bg-white shadow-md">
+        <!-- Pagination Info and Per Page -->
+        <div class="flex items-center justify-between border-b border-gray-200 px-4 py-3 sm:px-6">
+          <div class="flex items-center gap-2">
+            <label class="text-sm text-gray-700">Show</label>
+            <select
+              v-model="perPage"
+              @change="handlePerPageChange"
+              class="rounded-lg border border-gray-300 px-2 py-1 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            >
+              <option :value="10">10</option>
+              <option :value="20">20</option>
+              <option :value="50">50</option>
+              <option :value="100">100</option>
+            </select>
+            <span class="text-sm text-gray-700">entries</span>
+          </div>
+          <div class="text-sm text-gray-700">
+            Showing {{ pagination.from || 0 }} to {{ pagination.to || 0 }} of {{ pagination.total || 0 }} entries
+          </div>
+        </div>
+
         <div class="overflow-x-auto">
           <table class="min-w-full divide-y divide-gray-200">
             <thead class="bg-gray-50">
@@ -146,6 +169,7 @@
                   <div class="flex items-center justify-end gap-2">
                     <button
                       v-if="canUpdate"
+                      type="button"
                       @click="openEditModal(user)"
                       class="text-blue-600 hover:text-blue-900"
                       title="Edit"
@@ -156,6 +180,7 @@
                     </button>
                     <button
                       v-if="canDelete && user.id !== currentUserId"
+                      type="button"
                       @click="confirmDelete(user)"
                       class="text-red-600 hover:text-red-900"
                       title="Delete"
@@ -169,6 +194,84 @@
               </tr>
             </tbody>
           </table>
+        </div>
+
+        <!-- Pagination -->
+        <div class="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6">
+          <div class="flex flex-1 justify-between sm:hidden">
+            <button
+              type="button"
+              @click="changePage(pagination.current_page - 1)"
+              :disabled="!pagination.prev_page_url"
+              class="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              Previous
+            </button>
+            <button
+              type="button"
+              @click="changePage(pagination.current_page + 1)"
+              :disabled="!pagination.next_page_url"
+              class="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              Next
+            </button>
+          </div>
+          <div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+            <div>
+              <p class="text-sm text-gray-700">
+                Page <span class="font-medium">{{ pagination.current_page }}</span> of
+                <span class="font-medium">{{ pagination.last_page }}</span>
+              </p>
+            </div>
+            <div>
+              <nav class="isolate inline-flex -space-x-px rounded-md shadow-sm">
+                <button
+                  type="button"
+                  @click="changePage(pagination.current_page - 1)"
+                  :disabled="!pagination.prev_page_url"
+                  class="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M12.79 5.23a.75.75 0 01-.02 1.06L8.832 10l3.938 3.71a.75.75 0 11-1.04 1.08l-4.5-4.25a.75.75 0 010-1.08l4.5-4.25a.75.75 0 011.06.02z" clip-rule="evenodd" />
+                  </svg>
+                </button>
+
+                <!-- Page numbers -->
+                <template v-for="page in visiblePages" :key="page">
+                  <span
+                    v-if="page === '...'"
+                    class="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-700 ring-1 ring-inset ring-gray-300"
+                  >
+                    ...
+                  </span>
+                  <button
+                    v-else
+                    type="button"
+                    @click="changePage(page)"
+                    :class="[
+                      page === pagination.current_page
+                        ? 'z-10 bg-blue-600 text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600'
+                        : 'text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0',
+                      'relative inline-flex items-center px-4 py-2 text-sm font-semibold'
+                    ]"
+                  >
+                    {{ page }}
+                  </button>
+                </template>
+
+                <button
+                  type="button"
+                  @click="changePage(pagination.current_page + 1)"
+                  :disabled="!pagination.next_page_url"
+                  class="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd" />
+                  </svg>
+                </button>
+              </nav>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -207,14 +310,41 @@ import UserFormModal from '@/Components/UserFormModal.vue';
 
 const authStore = useAuthStore();
 const currentUserId = computed(() => authStore.user?.id);
-const canCreate = computed(() => authStore.user?.permission?.user_menu_create ?? false);
-const canUpdate = computed(() => authStore.user?.permission?.user_menu_update ?? false);
-const canDelete = computed(() => authStore.user?.permission?.user_menu_delete ?? false);
+
+// Helper function to check permissions (handles both array and boolean formats)
+const hasPermission = (permission) => {
+  const userPermission = authStore.user?.permission;
+  if (!userPermission) return false;
+  
+  // Check if permissions is an array
+  if (Array.isArray(userPermission.permissions)) {
+    return userPermission.permissions.includes(permission);
+  }
+  
+  // Check if it's a boolean property (old format)
+  return userPermission[permission] ?? false;
+};
+
+const canCreate = computed(() => hasPermission('user_menu_create'));
+const canUpdate = computed(() => hasPermission('user_menu_update'));
+const canDelete = computed(() => hasPermission('user_menu_delete'));
 
 const loading = ref(false);
 const users = ref([]);
 const permissions = ref([]);
 const machines = ref([]);
+const perPage = ref(20);
+
+const pagination = reactive({
+  current_page: 1,
+  last_page: 1,
+  per_page: 20,
+  total: 0,
+  from: 0,
+  to: 0,
+  prev_page_url: null,
+  next_page_url: null,
+});
 
 const filters = reactive({
   search: '',
@@ -231,22 +361,51 @@ const deleteModal = reactive({
   loading: false,
 });
 
+// Computed property for visible page numbers
+const visiblePages = computed(() => {
+  const pages = [];
+  const current = pagination.current_page;
+  const last = pagination.last_page;
+  const delta = 2;
+
+  for (let i = Math.max(2, current - delta); i <= Math.min(last - 1, current + delta); i++) {
+    pages.push(i);
+  }
+
+  if (current - delta > 2) {
+    pages.unshift('...');
+  }
+  if (current + delta < last - 1) {
+    pages.push('...');
+  }
+
+  pages.unshift(1);
+  if (last > 1) {
+    pages.push(last);
+  }
+
+  return pages.filter((v, i, a) => a.indexOf(v) === i);
+});
+
 // Watch filters with debounce
 let timeout = null;
 watch(filters, () => {
   clearTimeout(timeout);
   timeout = setTimeout(() => {
+    pagination.current_page = 1;
     fetchUsers();
   }, 300);
 }, { deep: true });
 
-const fetchUsers = async () => {
+const fetchUsers = async (page = pagination.current_page) => {
   loading.value = true;
   try {
     const params = new URLSearchParams();
+    params.append('page', page);
+    params.append('per_page', perPage.value);
     if (filters.search) params.append('search', filters.search);
     if (filters.user_type) params.append('user_type', filters.user_type);
-    if (filters.status) params.append('status', filters.status);
+    if (filters.status !== '') params.append('status', filters.status);
 
     const response = await fetch(`/api/users?${params}`, {
       headers: {
@@ -258,11 +417,34 @@ const fetchUsers = async () => {
     if (response.ok) {
       const data = await response.json();
       users.value = data.data || [];
+      
+      // Update pagination
+      Object.assign(pagination, {
+        current_page: data.current_page || 1,
+        last_page: data.last_page || 1,
+        per_page: data.per_page || 20,
+        total: data.total || 0,
+        from: data.from || 0,
+        to: data.to || 0,
+        prev_page_url: data.prev_page_url,
+        next_page_url: data.next_page_url,
+      });
     }
   } catch (error) {
     console.error('Failed to fetch users:', error);
   } finally {
     loading.value = false;
+  }
+};
+
+const handlePerPageChange = () => {
+  pagination.current_page = 1;
+  fetchUsers();
+};
+
+const changePage = (page) => {
+  if (page >= 1 && page <= pagination.last_page && page !== '...') {
+    fetchUsers(page);
   }
 };
 
@@ -307,23 +489,26 @@ const resetFilters = () => {
 };
 
 const openCreateModal = () => {
+  console.log('Opening create modal');
   selectedUser.value = null;
   showFormModal.value = true;
 };
 
 const openEditModal = (user) => {
+  console.log('Opening edit modal for user:', user);
   selectedUser.value = { ...user };
   showFormModal.value = true;
 };
 
 const closeFormModal = () => {
+  console.log('Closing form modal');
   showFormModal.value = false;
   selectedUser.value = null;
 };
 
 const handleUserSaved = () => {
   closeFormModal();
-  fetchUsers();
+  fetchUsers(pagination.current_page);
 };
 
 const confirmDelete = (user) => {
@@ -345,7 +530,7 @@ const deleteUser = async () => {
     if (response.ok) {
       deleteModal.show = false;
       deleteModal.user = null;
-      fetchUsers();
+      fetchUsers(pagination.current_page);
     } else {
       alert('Failed to delete user');
     }
@@ -380,6 +565,8 @@ const formatUserType = (type) => {
 };
 
 onMounted(() => {
+  console.log('Component mounted');
+  console.log('Can create:', canCreate.value);
   fetchUsers();
   fetchPermissions();
   fetchMachines();

@@ -42,7 +42,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/permissions', function () {
         return response()->json([
             'success' => true,
-            'data' => UserPermission::select('id', 'role_name', 'description')->get(),
+            'data' => UserPermission::select('id', 'role_name')->get(),
         ]);
     })->name('api.permissions');
 

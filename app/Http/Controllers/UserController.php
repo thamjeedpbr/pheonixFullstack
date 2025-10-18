@@ -17,14 +17,14 @@ use Illuminate\Support\Facades\Hash;
 /**
  * User Management Controller
  * 
- * Handles CRUD operations for users
+ * Handles CRUD operations for users with server-side pagination
  */
 class UserController extends Controller
 {
     use ApiResponseTrait;
 
     /**
-     * Display a listing of users
+     * Display a listing of users with server-side pagination
      */
     public function index(Request $request): JsonResponse
     {
@@ -51,16 +51,27 @@ class UserController extends Controller
             }
 
             // Filter by status
-            if ($status !== null) {
+            if ($status !== null && $status !== '') {
                 $query->where('status', (bool) $status);
             }
 
+            // Get paginated results
             $users = $query->orderBy('created_at', 'desc')->paginate($perPage);
 
-            return $this->paginatedResponse(
-                new UserCollection($users),
-                'Users retrieved successfully'
-            );
+            // Return paginated response with meta data
+            return response()->json([
+                'success' => true,
+                'message' => 'Users retrieved successfully',
+                'data' => UserResource::collection($users->items()),
+                'current_page' => $users->currentPage(),
+                'last_page' => $users->lastPage(),
+                'per_page' => $users->perPage(),
+                'total' => $users->total(),
+                'from' => $users->firstItem(),
+                'to' => $users->lastItem(),
+                'prev_page_url' => $users->previousPageUrl(),
+                'next_page_url' => $users->nextPageUrl(),
+            ]);
 
         } catch (\Exception $e) {
             return $this->serverErrorResponse(
@@ -229,7 +240,7 @@ class UserController extends Controller
                 );
             }
 
-            // Soft delete
+            // Soft delete by setting status to false
             $user->status = false;
             $user->save();
 
@@ -237,7 +248,10 @@ class UserController extends Controller
 
             DB::commit();
 
-            return $this->noContentResponse('User deleted successfully');
+            return response()->json([
+                'success' => true,
+                'message' => 'User deleted successfully'
+            ]);
 
         } catch (\Exception $e) {
             DB::rollBack();
