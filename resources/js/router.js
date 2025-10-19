@@ -8,6 +8,11 @@ import UsersIndex from './Pages/Users/Index.vue';
 import MachinesIndex from './Pages/Machines/Index.vue';
 import MaterialsIndex from './Pages/Materials/Index.vue';
 import MachineTypesIndex from './Pages/MachineTypes/Index.vue';
+import ProcessesIndex from './Pages/Processes/Index.vue';
+import DepartmentsIndex from './Pages/Departments/Index.vue';
+import ShiftsIndex from './Pages/Shifts/Index.vue';
+import SectionsIndex from './Pages/Sections/Index.vue';
+import StatusesIndex from './Pages/Statuses/Index.vue';
 
 const routes = [
   {
@@ -48,6 +53,36 @@ const routes = [
     path: '/machine-types',
     name: 'machine-types.index',
     component: MachineTypesIndex,
+    meta: { requiresAuth: true },
+  },
+  {
+    path: '/processes',
+    name: 'processes.index',
+    component: ProcessesIndex,
+    meta: { requiresAuth: true },
+  },
+  {
+    path: '/departments',
+    name: 'departments.index',
+    component: DepartmentsIndex,
+    meta: { requiresAuth: true },
+  },
+  {
+    path: '/shifts',
+    name: 'shifts.index',
+    component: ShiftsIndex,
+    meta: { requiresAuth: true },
+  },
+  {
+    path: '/sections',
+    name: 'sections.index',
+    component: SectionsIndex,
+    meta: { requiresAuth: true },
+  },
+  {
+    path: '/statuses',
+    name: 'statuses.index',
+    component: StatusesIndex,
     meta: { requiresAuth: true },
   },
 ];
