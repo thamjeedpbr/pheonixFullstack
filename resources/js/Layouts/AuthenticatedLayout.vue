@@ -1,33 +1,43 @@
 <template>
   <div class="min-h-screen bg-gray-50">
-    <!-- Navbar -->
+    <!-- Navbar - Fixed at top -->
     <Navbar 
       :user="user" 
       @toggle-sidebar="sidebarOpen = !sidebarOpen"
       @logout="handleLogout"
     />
 
-    <div class="flex">
+    <div class="flex pt-16">
       <!-- Sidebar -->
       <Sidebar 
         :open="sidebarOpen"
         :user="user"
         @close="sidebarOpen = false"
+        @toggle-sidebar="sidebarOpen = !sidebarOpen"
       />
+
+      <!-- Overlay for mobile when sidebar is open -->
+      <div 
+        v-if="sidebarOpen" 
+        @click="sidebarOpen = false"
+        class="fixed inset-0 bg-black bg-opacity-50 z-20 lg:hidden"
+      ></div>
 
       <!-- Main Content -->
       <main 
-        class="flex-1 p-6 transition-all duration-300"
+        class="flex-1 min-h-screen transition-all duration-300"
         :class="sidebarOpen ? 'lg:ml-64' : 'lg:ml-16'"
       >
-        <slot />
+        <div class="p-3 sm:p-4 md:p-6">
+          <slot />
+        </div>
       </main>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
 import Navbar from '@/Components/Navbar.vue';
@@ -46,23 +56,35 @@ const handleLogout = async () => {
   router.push('/login');
 };
 
-// Responsive sidebar behavior
-onMounted(() => {
-  // Close sidebar on mobile by default
+// Handle window resize
+const handleResize = () => {
   if (window.innerWidth < 1024) {
     sidebarOpen.value = false;
+  } else {
+    sidebarOpen.value = true;
   }
+};
 
-  // Handle window resize
-  window.addEventListener('resize', () => {
-    if (window.innerWidth < 1024) {
-      sidebarOpen.value = false;
-    }
-  });
+// Responsive sidebar behavior
+onMounted(() => {
+  // Set initial state based on screen size
+  handleResize();
+  
+  // Add resize listener
+  window.addEventListener('resize', handleResize);
+});
+
+onUnmounted(() => {
+  window.removeEventListener('resize', handleResize);
 });
 </script>
 
 <style scoped>
+/* Ensure smooth scrolling */
+main {
+  scroll-behavior: smooth;
+}
+
 /* Custom scrollbar for content area */
 main::-webkit-scrollbar {
   width: 8px;
