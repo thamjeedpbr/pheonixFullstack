@@ -26,7 +26,7 @@
           </li>
 
           <!-- Administration Section -->
-          <li v-if="hasPermission('user_menu_view') || hasPermission('machine_master_view') || hasPermission('material_master_view') || hasPermission('machine_type_view') || hasPermission('process_view') || hasPermission('department_view') || hasPermission('shift_view') || hasPermission('section_view') || hasPermission('status_menu_view')">
+          <li v-if="hasPermission('user-menu.view') || hasPermission('machine-master.view') || hasPermission('material-master.view') || hasPermission('machine-type.view') || hasPermission('process.view') || hasPermission('department.view') || hasPermission('shift.view') || hasPermission('section.view') || hasPermission('status-menu.view')">
             <div class="px-4 py-2 text-xs font-semibold text-gray-400 uppercase" v-if="open">
               Administration
             </div>
@@ -34,7 +34,7 @@
 
             <!-- Users -->
             <router-link
-              v-if="hasPermission('user_menu_view')"
+              v-if="hasPermission('user-menu.view')"
               to="/users"
               class="flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition duration-200"
               :class="{ 'bg-blue-50 text-blue-600': $route.path.startsWith('/users') }"
@@ -47,7 +47,7 @@
 
             <!-- Machines -->
             <router-link
-              v-if="hasPermission('machine_master_view')"
+              v-if="hasPermission('machine-master.view')"
               to="/machines"
               class="flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition duration-200"
               :class="{ 'bg-blue-50 text-blue-600': $route.path.startsWith('/machines') }"
@@ -60,7 +60,7 @@
 
             <!-- Materials -->
             <router-link
-              v-if="hasPermission('material_master_view')"
+              v-if="hasPermission('material-master.view')"
               to="/materials"
               class="flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition duration-200"
               :class="{ 'bg-blue-50 text-blue-600': $route.path.startsWith('/materials') }"
@@ -73,7 +73,7 @@
 
             <!-- Machine Types -->
             <router-link
-              v-if="hasPermission('machine_type_view')"
+              v-if="hasPermission('machine-type.view')"
               to="/machine-types"
               class="flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition duration-200"
               :class="{ 'bg-blue-50 text-blue-600': $route.path.startsWith('/machine-types') }"
@@ -86,7 +86,7 @@
 
             <!-- Processes -->
             <router-link
-              v-if="hasPermission('process_view')"
+              v-if="hasPermission('process.view')"
               to="/processes"
               class="flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition duration-200"
               :class="{ 'bg-blue-50 text-blue-600': $route.path.startsWith('/processes') }"
@@ -100,7 +100,7 @@
 
             <!-- Departments -->
             <router-link
-              v-if="hasPermission('department_view')"
+              v-if="hasPermission('department.view')"
               to="/departments"
               class="flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition duration-200"
               :class="{ 'bg-blue-50 text-blue-600': $route.path.startsWith('/departments') }"
@@ -113,7 +113,7 @@
 
             <!-- Shifts -->
             <router-link
-              v-if="hasPermission('shift_view')"
+              v-if="hasPermission('shift.view')"
               to="/shifts"
               class="flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition duration-200"
               :class="{ 'bg-blue-50 text-blue-600': $route.path.startsWith('/shifts') }"
@@ -126,7 +126,7 @@
 
             <!-- Sections -->
             <router-link
-              v-if="hasPermission('section_view')"
+              v-if="hasPermission('section.view')"
               to="/sections"
               class="flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition duration-200"
               :class="{ 'bg-blue-50 text-blue-600': $route.path.startsWith('/sections') }"
@@ -139,7 +139,7 @@
 
             <!-- Statuses -->
             <router-link
-              v-if="hasPermission('status_menu_view')"
+              v-if="hasPermission('status-menu.view')"
               to="/statuses"
               class="flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition duration-200"
               :class="{ 'bg-blue-50 text-blue-600': $route.path.startsWith('/statuses') }"
@@ -195,11 +195,12 @@ const props = defineProps({
 // Emits
 defineEmits(['close', 'toggle-sidebar']);
 
-// Check if user has permission
+// Check if user has permission using new Spatie format
 const hasPermission = (permission) => {
-  if (!props.user || !props.user.permission) return false;
+  if (!props.user) return false;
   
-  const permissions = props.user.permission.permissions || [];
+  // Check in permissions array (Spatie format)
+  const permissions = props.user.permissions || props.user.permission_list || [];
   return permissions.includes(permission);
 };
 </script>
