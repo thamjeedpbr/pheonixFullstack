@@ -481,9 +481,9 @@ const hasPermission = (permission) => {
   return userPermission[permission] ?? false;
 };
 
-const canCreate = computed(() => hasPermission('machine_type_create'));
-const canUpdate = computed(() => hasPermission('machine_type_update'));
-const canDelete = computed(() => hasPermission('machine_type_delete'));
+const canCreate = computed(() => hasPermission('machine-type.create'));
+const canUpdate = computed(() => hasPermission('machine-type.update'));
+const canDelete = computed(() => hasPermission('machine-type.delete'));
 
 const loading = ref(false);
 const loadingMore = ref(false);

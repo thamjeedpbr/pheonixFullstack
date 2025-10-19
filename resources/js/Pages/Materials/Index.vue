@@ -518,9 +518,9 @@ const hasPermission = (permission) => {
   return userPermission[permission] ?? false;
 };
 
-const canCreate = computed(() => hasPermission('material_master_create'));
-const canUpdate = computed(() => hasPermission('material_master_update'));
-const canDelete = computed(() => hasPermission('material_master_delete'));
+const canCreate = computed(() => hasPermission('material-master.create'));
+const canUpdate = computed(() => hasPermission('material-master.update'));
+const canDelete = computed(() => hasPermission('material-master.delete'));
 
 const loading = ref(false);
 const loadingMore = ref(false);

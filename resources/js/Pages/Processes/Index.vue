@@ -440,9 +440,9 @@ const hasPermission = (permission) => {
   return userPermission[permission] ?? false;
 };
 
-const canCreate = computed(() => hasPermission('process_create'));
-const canUpdate = computed(() => hasPermission('process_update'));
-const canDelete = computed(() => hasPermission('process_delete'));
+const canCreate = computed(() => hasPermission('process.create'));
+const canUpdate = computed(() => hasPermission('process.update'));
+const canDelete = computed(() => hasPermission('process.delete'));
 
 const loading = ref(false);
 const loadingMore = ref(false);

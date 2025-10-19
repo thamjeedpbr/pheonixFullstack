@@ -437,9 +437,9 @@ const hasPermission = (permission) => {
   return userPermission[permission] ?? false;
 };
 
-const canCreate = computed(() => hasPermission('section_create'));
-const canUpdate = computed(() => hasPermission('section_update'));
-const canDelete = computed(() => hasPermission('section_delete'));
+const canCreate = computed(() => hasPermission('section.create'));
+const canUpdate = computed(() => hasPermission('section.update'));
+const canDelete = computed(() => hasPermission('section.delete'));
 
 const loading = ref(false);
 const loadingMore = ref(false);

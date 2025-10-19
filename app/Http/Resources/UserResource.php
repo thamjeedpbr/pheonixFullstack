@@ -29,7 +29,7 @@ class UserResource extends JsonResource
             'status' => (bool) $this->status,
             'is_super_user' => (bool) $this->is_super_user,
             
-            // Roles and Permissions using Spatie
+            // Roles using Spatie
             'roles' => $this->whenLoaded('roles', function () {
                 return $this->roles->map(function ($role) {
                     return [
@@ -39,13 +39,17 @@ class UserResource extends JsonResource
                 });
             }),
             
-            'permissions' => $this->whenLoaded('permissions', function () {
-                return $this->getAllPermissions()->pluck('name');
-            }),
+            // Get all permissions (from roles and direct permissions)
+            'permissions' => $this->when(
+                $this->relationLoaded('roles'),
+                function () {
+                    return $this->getAllPermissions()->pluck('name');
+                }
+            ),
             
-            // Direct permissions list
+            // Alias for permissions (for compatibility)
             'permission_list' => $this->when(
-                $this->relationLoaded('roles') || $this->relationLoaded('permissions'),
+                $this->relationLoaded('roles'),
                 function () {
                     return $this->getAllPermissions()->pluck('name');
                 }

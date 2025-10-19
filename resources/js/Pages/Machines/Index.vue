@@ -493,27 +493,17 @@
 <script setup>
 import { ref, reactive, computed, watch, onMounted, onUnmounted } from 'vue';
 import { useAuthStore } from '@/stores/auth';
+import { usePermissions } from '@/composables/usePermissions';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import Modal from '@/Components/Modal.vue';
 import MachineFormModal from '@/Components/MachineFormModal.vue';
 
 const authStore = useAuthStore();
+const { hasPermission } = usePermissions();
 
-// Helper function to check permissions
-const hasPermission = (permission) => {
-  const userPermission = authStore.user?.permission;
-  if (!userPermission) return false;
-  
-  if (Array.isArray(userPermission.permissions)) {
-    return userPermission.permissions.includes(permission);
-  }
-  
-  return userPermission[permission] ?? false;
-};
-
-const canCreate = computed(() => hasPermission('machine_master_create'));
-const canUpdate = computed(() => hasPermission('machine_master_update'));
-const canDelete = computed(() => hasPermission('machine_master_delete'));
+const canCreate = computed(() => hasPermission('machine-master.create'));
+const canUpdate = computed(() => hasPermission('machine-master.update'));
+const canDelete = computed(() => hasPermission('machine-master.delete'));
 
 const loading = ref(false);
 const loadingMore = ref(false);
