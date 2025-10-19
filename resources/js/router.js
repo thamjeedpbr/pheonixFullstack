@@ -5,6 +5,7 @@ import { useAuthStore } from './stores/auth';
 import Login from './Pages/Auth/Login.vue';
 import Dashboard from './Pages/Dashboard.vue';
 import UsersIndex from './Pages/Users/Index.vue';
+import MachinesIndex from './Pages/Machines/Index.vue';
 
 const routes = [
   {
@@ -27,6 +28,12 @@ const routes = [
     path: '/users',
     name: 'users.index',
     component: UsersIndex,
+    meta: { requiresAuth: true },
+  },
+  {
+    path: '/machines',
+    name: 'machines.index',
+    component: MachinesIndex,
     meta: { requiresAuth: true },
   },
 ];

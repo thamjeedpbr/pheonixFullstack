@@ -2,8 +2,8 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\MachineController;
 use App\Models\UserPermission;
-use App\Models\Machine;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -38,6 +38,18 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::delete('/{id}', [UserController::class, 'destroy'])->name('api.users.destroy');
     });
 
+    // Machine Management Routes
+    Route::prefix('machines')->group(function () {
+        Route::get('/', [MachineController::class, 'index'])->name('api.machines.index');
+        Route::post('/', [MachineController::class, 'store'])->name('api.machines.store');
+        Route::get('/stats', [MachineController::class, 'stats'])->name('api.machines.stats');
+        Route::get('/types', [MachineController::class, 'getMachineTypes'])->name('api.machines.types');
+        Route::get('/processes', [MachineController::class, 'getProcesses'])->name('api.machines.processes');
+        Route::get('/{id}', [MachineController::class, 'show'])->name('api.machines.show');
+        Route::put('/{id}', [MachineController::class, 'update'])->name('api.machines.update');
+        Route::delete('/{id}', [MachineController::class, 'destroy'])->name('api.machines.destroy');
+    });
+
     // Permissions endpoint
     Route::get('/permissions', function () {
         return response()->json([
@@ -45,18 +57,4 @@ Route::middleware(['auth:sanctum'])->group(function () {
             'data' => UserPermission::select('id', 'role_name')->get(),
         ]);
     })->name('api.permissions');
-
-    // Machines endpoint
-    Route::get('/machines', function (Request $request) {
-        $query = Machine::select('id', 'machine_name', 'machine_type', 'status');
-        
-        if ($request->has('status')) {
-            $query->where('status', (bool) $request->status);
-        }
-        
-        return response()->json([
-            'success' => true,
-            'data' => $query->get(),
-        ]);
-    })->name('api.machines');
 });
