@@ -267,7 +267,8 @@ watch(() => props.user, (user) => {
     form.user_name = user.user_name;
     form.name = user.name;
     form.phone_no = user.phone_no;
-    form.user_type = user.user_type;
+    // Convert user_type to uppercase to match dropdown options
+    form.user_type = user.user_type ? user.user_type.toUpperCase() : '';
     form.permission_id = user.permission?.id || '';
     form.machine_ids = user.machines?.map(m => m.id) || [];
     form.status = user.status;
