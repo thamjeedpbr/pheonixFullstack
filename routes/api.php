@@ -3,6 +3,7 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\MachineController;
+use App\Http\Controllers\MaterialController;
 use App\Models\UserPermission;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -48,6 +49,17 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::get('/{id}', [MachineController::class, 'show'])->name('api.machines.show');
         Route::put('/{id}', [MachineController::class, 'update'])->name('api.machines.update');
         Route::delete('/{id}', [MachineController::class, 'destroy'])->name('api.machines.destroy');
+    });
+
+    // Material Management Routes
+    Route::prefix('materials')->group(function () {
+        Route::get('/', [MaterialController::class, 'index'])->name('api.materials.index');
+        Route::post('/', [MaterialController::class, 'store'])->name('api.materials.store');
+        Route::get('/stats', [MaterialController::class, 'stats'])->name('api.materials.stats');
+        Route::get('/departments', [MaterialController::class, 'getDepartments'])->name('api.materials.departments');
+        Route::get('/{id}', [MaterialController::class, 'show'])->name('api.materials.show');
+        Route::put('/{id}', [MaterialController::class, 'update'])->name('api.materials.update');
+        Route::delete('/{id}', [MaterialController::class, 'destroy'])->name('api.materials.destroy');
     });
 
     // Permissions endpoint

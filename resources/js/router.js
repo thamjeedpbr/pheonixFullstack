@@ -6,6 +6,7 @@ import Login from './Pages/Auth/Login.vue';
 import Dashboard from './Pages/Dashboard.vue';
 import UsersIndex from './Pages/Users/Index.vue';
 import MachinesIndex from './Pages/Machines/Index.vue';
+import MaterialsIndex from './Pages/Materials/Index.vue';
 
 const routes = [
   {
@@ -34,6 +35,12 @@ const routes = [
     path: '/machines',
     name: 'machines.index',
     component: MachinesIndex,
+    meta: { requiresAuth: true },
+  },
+  {
+    path: '/materials',
+    name: 'materials.index',
+    component: MaterialsIndex,
     meta: { requiresAuth: true },
   },
 ];

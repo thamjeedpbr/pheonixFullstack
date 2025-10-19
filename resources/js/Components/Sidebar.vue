@@ -26,7 +26,7 @@
           </li>
 
           <!-- Administration Section -->
-          <li v-if="hasPermission('user_menu_view') || hasPermission('machine_master_view')">
+          <li v-if="hasPermission('user_menu_view') || hasPermission('machine_master_view') || hasPermission('material_master_view')">
             <div class="px-4 py-2 text-xs font-semibold text-gray-400 uppercase" v-if="open">
               Administration
             </div>
@@ -56,6 +56,19 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
               </svg>
               <span v-if="open" class="font-medium">Machines</span>
+            </router-link>
+
+            <!-- Materials -->
+            <router-link
+              v-if="hasPermission('material_master_view')"
+              to="/materials"
+              class="flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition duration-200"
+              :class="{ 'bg-blue-50 text-blue-600': $route.path.startsWith('/materials') }"
+            >
+              <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+              </svg>
+              <span v-if="open" class="font-medium">Materials</span>
             </router-link>
           </li>
         </ul>
