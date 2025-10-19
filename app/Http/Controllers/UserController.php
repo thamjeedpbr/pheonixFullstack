@@ -13,6 +13,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Spatie\Permission\Models\Role;
 
 /**
  * User Management Controller
@@ -34,7 +35,7 @@ class UserController extends Controller
             $userType = $request->input('user_type');
             $status = $request->input('status');
 
-            $query = User::with(['permission', 'machines']);
+            $query = User::with(['roles', 'machines']);
 
             // Search
             if ($search) {
@@ -93,18 +94,27 @@ class UserController extends Controller
                 'name' => $request->name,
                 'phone_no' => $request->phone_no,
                 'user_type' => $request->user_type,
-                'permission_id' => $request->permission_id,
                 'status' => $request->status ?? true,
                 'password' => Hash::make($request->password),
-                'is_super_user' => $request->user_type === 'ADMIN',
+                'is_super_user' => $request->user_type === 'admin',
             ]);
+
+            // Assign role if provided
+            if ($request->has('role_id') && $request->role_id) {
+                $role = Role::find($request->role_id);
+                if ($role) {
+                    $user->assignRole($role);
+                }
+            } elseif ($request->has('role_name') && $request->role_name) {
+                $user->assignRole($request->role_name);
+            }
 
             // Attach machines
             if ($request->has('machine_ids') && is_array($request->machine_ids)) {
                 $user->machines()->attach($request->machine_ids);
             }
 
-            $user->load(['permission', 'machines']);
+            $user->load(['roles', 'machines']);
 
             DB::commit();
 
@@ -129,7 +139,7 @@ class UserController extends Controller
     public function show(int $id): JsonResponse
     {
         try {
-            $user = User::with(['permission', 'machines'])->find($id);
+            $user = User::with(['roles', 'machines'])->find($id);
 
             if (!$user) {
                 return $this->notFoundResponse('User not found');
@@ -166,8 +176,7 @@ class UserController extends Controller
                 'name' => $request->name,
                 'phone_no' => $request->phone_no,
                 'user_type' => $request->user_type,
-                'permission_id' => $request->permission_id,
-                'is_super_user' => $request->user_type === 'ADMIN',
+                'is_super_user' => $request->user_type === 'admin',
             ];
 
             if ($request->has('status')) {
@@ -181,6 +190,16 @@ class UserController extends Controller
 
             $user->update($updateData);
 
+            // Update role if provided
+            if ($request->has('role_id') && $request->role_id) {
+                $role = Role::find($request->role_id);
+                if ($role) {
+                    $user->syncRoles([$role]);
+                }
+            } elseif ($request->has('role_name') && $request->role_name) {
+                $user->syncRoles([$request->role_name]);
+            }
+
             // Sync machines
             if ($request->has('machine_ids')) {
                 if (is_array($request->machine_ids)) {
@@ -190,7 +209,7 @@ class UserController extends Controller
                 }
             }
 
-            $user->load(['permission', 'machines']);
+            $user->load(['roles', 'machines']);
 
             DB::commit();
 
@@ -258,6 +277,26 @@ class UserController extends Controller
             
             return $this->serverErrorResponse(
                 'Failed to delete user',
+                $e
+            );
+        }
+    }
+
+    /**
+     * Get all available roles
+     */
+    public function getRoles(): JsonResponse
+    {
+        try {
+            $roles = Role::all(['id', 'name']);
+            
+            return response()->json([
+                'success' => true,
+                'data' => $roles
+            ]);
+        } catch (\Exception $e) {
+            return $this->serverErrorResponse(
+                'Failed to retrieve roles',
                 $e
             );
         }

@@ -82,28 +82,28 @@
                   :class="{ 'border-red-500': errors.user_type }"
                 >
                   <option value="">Select Type</option>
-                  <option value="ADMIN">Admin</option>
-                  <option value="SUPER_WISER">Supervisor</option>
-                  <option value="OPERATOR">Operator</option>
+                  <option value="admin">Admin</option>
+                  <option value="super_wiser">Supervisor</option>
+                  <option value="operator">Operator</option>
                 </select>
                 <p v-if="errors.user_type" class="mt-1 text-sm text-red-600">{{ errors.user_type }}</p>
               </div>
 
-              <!-- Permission Role -->
+              <!-- Role -->
               <div>
-                <label class="block text-sm font-medium text-gray-700">Permission Role *</label>
+                <label class="block text-sm font-medium text-gray-700">Role *</label>
                 <select
-                  v-model="form.permission_id"
+                  v-model="form.role_id"
                   required
                   class="mt-1 w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                  :class="{ 'border-red-500': errors.permission_id }"
+                  :class="{ 'border-red-500': errors.role_id }"
                 >
                   <option value="">Select Role</option>
-                  <option v-for="permission in permissions" :key="permission.id" :value="permission.id">
-                    {{ permission.role_name }}
+                  <option v-for="role in roles" :key="role.id" :value="role.id">
+                    {{ role.name }}
                   </option>
                 </select>
-                <p v-if="errors.permission_id" class="mt-1 text-sm text-red-600">{{ errors.permission_id }}</p>
+                <p v-if="errors.role_id" class="mt-1 text-sm text-red-600">{{ errors.role_id }}</p>
               </div>
 
               <!-- Assigned Machines -->
@@ -227,7 +227,7 @@ import { useAuthStore } from '@/stores/auth';
 const props = defineProps({
   show: Boolean,
   user: Object,
-  permissions: Array,
+  roles: Array,
   machines: Array,
 });
 
@@ -241,7 +241,7 @@ const form = reactive({
   name: '',
   phone_no: '',
   user_type: '',
-  permission_id: '',
+  role_id: '',
   machine_ids: [],
   password: '',
   password_confirmation: '',
@@ -257,7 +257,7 @@ const errors = reactive({
   name: '',
   phone_no: '',
   user_type: '',
-  permission_id: '',
+  role_id: '',
   password: '',
   password_confirmation: '',
 });
@@ -268,8 +268,8 @@ watch(() => props.user, (user) => {
     form.name = user.name;
     form.phone_no = user.phone_no;
     // Convert user_type to uppercase to match dropdown options
-    form.user_type = user.user_type ? user.user_type.toUpperCase() : '';
-    form.permission_id = user.permission?.id || '';
+    form.user_type = user.user_type;
+    form.role_id = user.roles?.[0]?.id || '';
     form.machine_ids = user.machines?.map(m => m.id) || [];
     form.status = user.status;
     form.password = '';
@@ -285,7 +285,7 @@ const resetForm = () => {
   form.name = '';
   form.phone_no = '';
   form.user_type = '';
-  form.permission_id = '';
+  form.role_id = '';
   form.machine_ids = [];
   form.password = '';
   form.password_confirmation = '';
@@ -311,7 +311,7 @@ const handleSubmit = async () => {
       name: form.name,
       phone_no: form.phone_no,
       user_type: form.user_type,
-      permission_id: form.permission_id,
+      role_id: form.role_id,
       machine_ids: form.machine_ids,
       status: form.status,
     };

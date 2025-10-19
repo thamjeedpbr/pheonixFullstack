@@ -40,7 +40,7 @@ class AuthController extends Controller
             // Find user by username
             $user = User::where('user_name', $request->user_name)
                         ->where('status', true)
-                        ->with(['roles', 'permissions', 'machines'])
+                        ->with(['roles', 'machines'])
                         ->first();
 
             // Check if user exists
@@ -149,7 +149,7 @@ class AuthController extends Controller
             }
 
             // Load relationships
-            $user->load(['roles', 'permissions', 'machines']);
+            $user->load(['roles', 'machines']);
 
             return $this->successResourceResponse(
                 new UserResource($user),

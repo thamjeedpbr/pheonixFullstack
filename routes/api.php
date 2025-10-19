@@ -10,7 +10,6 @@ use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\ShiftController;
 use App\Http\Controllers\SectionController;
 use App\Http\Controllers\StatusController;
-use App\Models\UserPermission;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -34,6 +33,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::get('/me', [AuthController::class, 'me'])->name('api.auth.me');
         Route::post('/refresh', [AuthController::class, 'refresh'])->name('api.auth.refresh');
         Route::post('/check-permission', [AuthController::class, 'checkPermission'])->name('api.auth.check-permission');
+        Route::post('/check-role', [AuthController::class, 'checkRole'])->name('api.auth.check-role');
     });
 
     // User Management Routes
@@ -44,6 +44,9 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::put('/{id}', [UserController::class, 'update'])->name('api.users.update');
         Route::delete('/{id}', [UserController::class, 'destroy'])->name('api.users.destroy');
     });
+
+    // Roles endpoint
+    Route::get('/roles', [UserController::class, 'getRoles'])->name('api.roles');
 
     // Machine Management Routes
     Route::prefix('machines')->group(function () {
@@ -133,12 +136,4 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::put('/{id}', [StatusController::class, 'update'])->name('api.statuses.update');
         Route::delete('/{id}', [StatusController::class, 'destroy'])->name('api.statuses.destroy');
     });
-
-    // Permissions endpoint
-    Route::get('/permissions', function () {
-        return response()->json([
-            'success' => true,
-            'data' => UserPermission::select('id', 'role_name')->get(),
-        ]);
-    })->name('api.permissions');
 });

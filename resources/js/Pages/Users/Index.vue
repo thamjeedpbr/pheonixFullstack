@@ -454,7 +454,7 @@
     <UserFormModal
       :show="showFormModal"
       :user="selectedUser"
-      :permissions="permissions"
+      :roles="roles"
       :machines="machines"
       @close="closeFormModal"
       @saved="handleUserSaved"
@@ -478,33 +478,23 @@
 <script setup>
 import { ref, reactive, computed, watch, onMounted, onUnmounted } from 'vue';
 import { useAuthStore } from '@/stores/auth';
+import { usePermissions } from '@/composables/usePermissions';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import Modal from '@/Components/Modal.vue';
 import UserFormModal from '@/Components/UserFormModal.vue';
 
 const authStore = useAuthStore();
 const currentUserId = computed(() => authStore.user?.id);
+const { hasPermission } = usePermissions();
 
-// Helper function to check permissions
-const hasPermission = (permission) => {
-  const userPermission = authStore.user?.permission;
-  if (!userPermission) return false;
-  
-  if (Array.isArray(userPermission.permissions)) {
-    return userPermission.permissions.includes(permission);
-  }
-  
-  return userPermission[permission] ?? false;
-};
-
-const canCreate = computed(() => hasPermission('user_menu_create'));
-const canUpdate = computed(() => hasPermission('user_menu_update'));
-const canDelete = computed(() => hasPermission('user_menu_delete'));
+const canCreate = computed(() => hasPermission('user-menu.create'));
+const canUpdate = computed(() => hasPermission('user-menu.update'));
+const canDelete = computed(() => hasPermission('user-menu.delete'));
 
 const loading = ref(false);
 const loadingMore = ref(false);
 const users = ref([]);
-const permissions = ref([]);
+const roles = ref([]);
 const machines = ref([]);
 const perPage = ref(20);
 const scrollContainer = ref(null);
@@ -663,9 +653,9 @@ const changePage = (page) => {
   }
 };
 
-const fetchPermissions = async () => {
+const fetchRoles = async () => {
   try {
-    const response = await fetch('/api/permissions', {
+    const response = await fetch('/api/roles', {
       headers: {
         'Authorization': `Bearer ${authStore.token}`,
         'Accept': 'application/json',
@@ -673,10 +663,10 @@ const fetchPermissions = async () => {
     });
     if (response.ok) {
       const data = await response.json();
-      permissions.value = data.data || [];
+      roles.value = data.data || [];
     }
   } catch (error) {
-    console.error('Failed to fetch permissions:', error);
+    console.error('Failed to fetch roles:', error);
   }
 };
 
@@ -781,7 +771,7 @@ const formatUserType = (type) => {
 
 onMounted(() => {
   fetchUsers();
-  fetchPermissions();
+  fetchRoles();
   fetchMachines();
   
   // Add scroll event listener for infinite scroll on mobile
