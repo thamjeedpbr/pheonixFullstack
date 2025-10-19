@@ -9,10 +9,11 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable, HasApiTokens;
+    use HasFactory, Notifiable, HasApiTokens, HasRoles;
 
     protected $fillable = [
         'user_name',
@@ -22,7 +23,6 @@ class User extends Authenticatable
         'password',
         'is_super_user',
         'api_key',
-        'permission_id',
         'login_detail_id',
         'last_login_time',
         'user_type',
@@ -46,11 +46,6 @@ class User extends Authenticatable
     const TYPE_OPERATOR = 'operator';
     const TYPE_SUPER_WISER = 'super_wiser';
     const TYPE_ADMIN = 'admin';
-
-    public function permission(): BelongsTo
-    {
-        return $this->belongsTo(UserPermission::class, 'permission_id');
-    }
 
     public function loginDetail(): BelongsTo
     {

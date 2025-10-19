@@ -19,8 +19,7 @@ return new class extends Migration
             $table->boolean('status')->default(true)->after('password');
             $table->boolean('is_super_user')->default(false)->after('status');
             $table->string('api_key')->nullable()->after('is_super_user');
-            $table->foreignId('permission_id')->nullable()->constrained('user_permissions')->nullOnDelete()->after('api_key');
-            $table->foreignId('login_detail_id')->nullable()->constrained('login_details')->nullOnDelete()->after('permission_id');
+            $table->foreignId('login_detail_id')->nullable()->constrained('login_details')->nullOnDelete();
             $table->timestamp('last_login_time')->nullable()->after('login_detail_id');
             $table->enum('user_type', ['operator', 'super_wiser', 'admin'])->default('operator')->after('last_login_time');
             

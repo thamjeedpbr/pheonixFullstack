@@ -40,7 +40,7 @@ class AuthController extends Controller
             // Find user by username
             $user = User::where('user_name', $request->user_name)
                         ->where('status', true)
-                        ->with(['permission', 'machines'])
+                        ->with(['roles', 'permissions', 'machines'])
                         ->first();
 
             // Check if user exists
@@ -149,7 +149,7 @@ class AuthController extends Controller
             }
 
             // Load relationships
-            $user->load(['permission', 'machines']);
+            $user->load(['roles', 'permissions', 'machines']);
 
             return $this->successResourceResponse(
                 new UserResource($user),
@@ -231,16 +231,7 @@ class AuthController extends Controller
                 return $this->errorResponse('Invalid request', 400);
             }
 
-            $userPermission = $user->permission;
-            
-            if (!$userPermission) {
-                return $this->successResponse([
-                    'has_permission' => false,
-                ], 'User has no permissions assigned');
-            }
-
-            $hasPermission = isset($userPermission->{$permission}) && 
-                           $userPermission->{$permission} == true;
+            $hasPermission = $user->hasPermissionTo($permission);
 
             return $this->successResponse([
                 'has_permission' => $hasPermission,
@@ -250,6 +241,37 @@ class AuthController extends Controller
         } catch (\Exception $e) {
             return $this->serverErrorResponse(
                 'Permission check failed',
+                $e
+            );
+        }
+    }
+
+    /**
+     * Check if user has specific role
+     *
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function checkRole(Request $request): JsonResponse
+    {
+        try {
+            $user = $request->user();
+            $role = $request->input('role');
+
+            if (!$user || !$role) {
+                return $this->errorResponse('Invalid request', 400);
+            }
+
+            $hasRole = $user->hasRole($role);
+
+            return $this->successResponse([
+                'has_role' => $hasRole,
+                'role' => $role,
+            ], 'Role check completed');
+
+        } catch (\Exception $e) {
+            return $this->serverErrorResponse(
+                'Role check failed',
                 $e
             );
         }

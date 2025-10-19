@@ -9,8 +9,9 @@ use Symfony\Component\HttpFoundation\Response;
 /**
  * Check Permission Middleware
  * 
- * Verifies that the authenticated user has specific permissions
- * Usage: Route::get('/users', [UserController::class, 'index'])->middleware('check.permission:user_menu_view');
+ * Verifies that the authenticated user has specific permissions using Spatie Permission
+ * Usage: Route::get('/users', [UserController::class, 'index'])->middleware('permission:user-menu.view');
+ * Or: Route::get('/users', [UserController::class, 'index'])->middleware('role:Super Admin');
  */
 class CheckPermission
 {
@@ -45,23 +46,8 @@ class CheckPermission
             return $next($request);
         }
 
-        // Load user permission if not already loaded
-        if (!$user->relationLoaded('permission')) {
-            $user->load('permission');
-        }
-
-        $userPermission = $user->permission;
-
-        // Check if user has permission record
-        if (!$userPermission) {
-            return response()->json([
-                'success' => false,
-                'message' => 'No permissions assigned to your account.',
-            ], 403);
-        }
-
-        // Check if the specific permission exists and is true
-        if (!isset($userPermission->{$permission}) || !$userPermission->{$permission}) {
+        // Check if user has the required permission
+        if (!$user->hasPermissionTo($permission)) {
             return response()->json([
                 'success' => false,
                 'message' => 'You do not have permission to perform this action.',
