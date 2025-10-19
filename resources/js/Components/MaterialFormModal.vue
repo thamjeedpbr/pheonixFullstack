@@ -1,14 +1,14 @@
 <template>
   <Modal :show="show" @close="handleClose" max-width="2xl">
     <div class="p-6">
-      <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">
+      <h2 class="text-2xl font-bold text-gray-900 mb-6">
         {{ isEditMode ? 'Edit Material' : 'Create New Material' }}
       </h2>
 
       <form @submit.prevent="handleSubmit" class="space-y-6">
         <!-- Material ID -->
         <div>
-          <label for="material_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          <label for="material_id" class="block text-sm font-medium text-gray-700 mb-1">
             Material ID <span class="text-red-500">*</span>
           </label>
           <input
@@ -16,7 +16,7 @@
             v-model="form.material_id"
             type="text"
             required
-            class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white text-gray-900"
             :class="{ 'border-red-500': errors.material_id }"
           />
           <p v-if="errors.material_id" class="mt-1 text-sm text-red-500">{{ errors.material_id }}</p>
@@ -24,7 +24,7 @@
 
         <!-- Name -->
         <div>
-          <label for="name" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          <label for="name" class="block text-sm font-medium text-gray-700 mb-1">
             Name <span class="text-red-500">*</span>
           </label>
           <input
@@ -32,7 +32,7 @@
             v-model="form.name"
             type="text"
             required
-            class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white text-gray-900"
             :class="{ 'border-red-500': errors.name }"
           />
           <p v-if="errors.name" class="mt-1 text-sm text-red-500">{{ errors.name }}</p>
@@ -40,14 +40,14 @@
 
         <!-- Department -->
         <div>
-          <label for="department_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          <label for="department_id" class="block text-sm font-medium text-gray-700 mb-1">
             Department <span class="text-red-500">*</span>
           </label>
           <select
             id="department_id"
             v-model="form.department_id"
             required
-            class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white text-gray-900"
             :class="{ 'border-red-500': errors.department_id }"
           >
             <option value="">Select Department</option>
@@ -62,7 +62,7 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <!-- GSM -->
           <div>
-            <label for="gsm" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label for="gsm" class="block text-sm font-medium text-gray-700 mb-1">
               GSM
             </label>
             <input
@@ -71,7 +71,7 @@
               type="number"
               step="0.01"
               min="0"
-              class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white text-gray-900"
               :class="{ 'border-red-500': errors.gsm }"
             />
             <p v-if="errors.gsm" class="mt-1 text-sm text-red-500">{{ errors.gsm }}</p>
@@ -79,14 +79,14 @@
 
           <!-- Unit -->
           <div>
-            <label for="unit" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label for="unit" class="block text-sm font-medium text-gray-700 mb-1">
               Unit
             </label>
             <input
               id="unit"
               v-model="form.unit"
               type="text"
-              class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white text-gray-900"
               :class="{ 'border-red-500': errors.unit }"
             />
             <p v-if="errors.unit" class="mt-1 text-sm text-red-500">{{ errors.unit }}</p>
@@ -95,14 +95,14 @@
 
         <!-- Utilization -->
         <div>
-          <label for="utilization" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          <label for="utilization" class="block text-sm font-medium text-gray-700 mb-1">
             Utilization
           </label>
           <input
             id="utilization"
             v-model="form.utilization"
             type="text"
-            class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white text-gray-900"
             :class="{ 'border-red-500': errors.utilization }"
           />
           <p v-if="errors.utilization" class="mt-1 text-sm text-red-500">{{ errors.utilization }}</p>
@@ -110,14 +110,14 @@
 
         <!-- Description -->
         <div>
-          <label for="description" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          <label for="description" class="block text-sm font-medium text-gray-700 mb-1">
             Description
           </label>
           <textarea
             id="description"
             v-model="form.description"
             rows="3"
-            class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white text-gray-900"
             :class="{ 'border-red-500': errors.description }"
           ></textarea>
           <p v-if="errors.description" class="mt-1 text-sm text-red-500">{{ errors.description }}</p>
@@ -133,7 +133,7 @@
               type="checkbox"
               class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
             />
-            <label for="coating" class="ml-2 block text-sm text-gray-700 dark:text-gray-300">
+            <label for="coating" class="ml-2 block text-sm text-gray-700">
               Coating
             </label>
           </div>
@@ -146,18 +146,18 @@
               type="checkbox"
               class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
             />
-            <label for="status" class="ml-2 block text-sm text-gray-700 dark:text-gray-300">
+            <label for="status" class="ml-2 block text-sm text-gray-700">
               Active
             </label>
           </div>
         </div>
 
         <!-- Buttons -->
-        <div class="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+        <div class="flex justify-end gap-3 pt-4 border-t border-gray-200">
           <button
             type="button"
             @click="handleClose"
-            class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+            class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
           >
             Cancel
           </button>

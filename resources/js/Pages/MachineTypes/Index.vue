@@ -3,8 +3,8 @@
     <!-- Header -->
     <div class="mb-4 sm:mb-6 flex flex-col gap-3 sm:gap-4 sm:flex-row sm:items-center sm:justify-between">
       <div>
-        <h1 class="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900">Material Management</h1>
-        <p class="mt-1 text-xs sm:text-sm text-gray-600">Manage materials and inventory</p>
+        <h1 class="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900">Machine Types</h1>
+        <p class="mt-1 text-xs sm:text-sm text-gray-600">Manage machine type categories and specifications</p>
       </div>
       <button
         v-if="canCreate"
@@ -15,7 +15,7 @@
         <svg class="mr-2 h-4 w-4 sm:h-5 sm:w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
         </svg>
-        Add Material
+        Add Machine Type
       </button>
     </div>
 
@@ -28,7 +28,7 @@
             <input
               v-model="filters.search"
               type="text"
-              placeholder="Search materials..."
+              placeholder="Search machine types..."
               class="w-full rounded-lg border border-gray-300 pl-10 pr-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
             />
             <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -62,27 +62,17 @@
       >
         <div v-if="showAdvancedFilters" class="mt-3 space-y-3 bg-white rounded-lg p-3 shadow-md border border-gray-200">
           <div>
-            <label class="mb-1 block text-xs font-medium text-gray-700">Department</label>
+            <label class="mb-1 block text-xs font-medium text-gray-700">Machine Type</label>
             <select
-              v-model="filters.department_id"
+              v-model="filters.machine_type"
               class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
             >
-              <option value="">All Departments</option>
-              <option v-for="dept in departments" :key="dept.id" :value="dept.id">
-                {{ dept.name }}
-              </option>
-            </select>
-          </div>
-
-          <div>
-            <label class="mb-1 block text-xs font-medium text-gray-700">Coating</label>
-            <select
-              v-model="filters.coating"
-              class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-            >
-              <option value="">All Coatings</option>
-              <option value="1">Coated</option>
-              <option value="0">Uncoated</option>
+              <option value="">All Types</option>
+              <option value="PRE_PRESS">Pre Press</option>
+              <option value="PRESS">Press</option>
+              <option value="POST_PRESS">Post Press</option>
+              <option value="DIE_CUT">Die Cut</option>
+              <option value="OTHER">Other</option>
             </select>
           </div>
 
@@ -120,39 +110,29 @@
 
     <!-- Desktop Filters -->
     <div class="hidden md:block mb-4 sm:mb-6 rounded-lg bg-white p-3 sm:p-4 shadow-md">
-      <div class="grid gap-3 sm:gap-4 sm:grid-cols-2 lg:grid-cols-5">
+      <div class="grid gap-3 sm:gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <div>
           <label class="mb-1 block text-xs sm:text-sm font-medium text-gray-700">Search</label>
           <input
             v-model="filters.search"
             type="text"
-            placeholder="Name or ID..."
+            placeholder="Type ID or Name..."
             class="w-full rounded-lg border border-gray-300 px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
           />
         </div>
 
         <div>
-          <label class="mb-1 block text-xs sm:text-sm font-medium text-gray-700">Department</label>
+          <label class="mb-1 block text-xs sm:text-sm font-medium text-gray-700">Machine Type</label>
           <select
-            v-model="filters.department_id"
+            v-model="filters.machine_type"
             class="w-full rounded-lg border border-gray-300 px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
           >
-            <option value="">All Departments</option>
-            <option v-for="dept in departments" :key="dept.id" :value="dept.id">
-              {{ dept.name }}
-            </option>
-          </select>
-        </div>
-
-        <div>
-          <label class="mb-1 block text-xs sm:text-sm font-medium text-gray-700">Coating</label>
-          <select
-            v-model="filters.coating"
-            class="w-full rounded-lg border border-gray-300 px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-          >
-            <option value="">All Coatings</option>
-            <option value="1">Coated</option>
-            <option value="0">Uncoated</option>
+            <option value="">All Types</option>
+            <option value="PRE_PRESS">Pre Press</option>
+            <option value="PRESS">Press</option>
+            <option value="POST_PRESS">Post Press</option>
+            <option value="DIE_CUT">Die Cut</option>
+            <option value="OTHER">Other</option>
           </select>
         </div>
 
@@ -208,19 +188,13 @@
           <thead class="bg-gray-50">
             <tr>
               <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-700">
-                Material ID
+                Type ID
               </th>
               <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-700">
                 Name
               </th>
               <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-700">
-                Department
-              </th>
-              <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-700">
-                GSM
-              </th>
-              <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-700">
-                Coating
+                Machine Type
               </th>
               <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-700">
                 Status
@@ -232,41 +206,37 @@
           </thead>
           <tbody class="divide-y divide-gray-200 bg-white">
             <tr v-if="loading">
-              <td colspan="7" class="px-6 py-12 text-center text-sm text-gray-500">
+              <td colspan="5" class="px-6 py-12 text-center text-sm text-gray-500">
                 <svg class="mx-auto h-8 w-8 animate-spin text-blue-600" fill="none" viewBox="0 0 24 24">
                   <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                   <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
-                <p class="mt-2">Loading materials...</p>
+                <p class="mt-2">Loading machine types...</p>
               </td>
             </tr>
-            <tr v-else-if="!materials.length">
-              <td colspan="7" class="px-6 py-12 text-center text-sm text-gray-500">
+            <tr v-else-if="!machineTypes.length">
+              <td colspan="5" class="px-6 py-12 text-center text-sm text-gray-500">
                 <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01" />
                 </svg>
-                <p class="mt-2">No materials found</p>
+                <p class="mt-2">No machine types found</p>
               </td>
             </tr>
-            <tr v-else v-for="material in materials" :key="material.id" class="hover:bg-gray-50">
+            <tr v-else v-for="machineType in machineTypes" :key="machineType.id" class="hover:bg-gray-50">
               <td class="whitespace-nowrap px-6 py-4">
-                <div class="text-sm font-medium text-gray-900">{{ material.material_id }}</div>
+                <div class="text-sm font-medium text-gray-900">{{ machineType.type_id }}</div>
               </td>
               <td class="whitespace-nowrap px-6 py-4 text-sm text-gray-900">
-                {{ material.name }}
-              </td>
-              <td class="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
-                {{ material.department?.name || 'N/A' }}
-              </td>
-              <td class="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
-                {{ material.gsm || 'N/A' }}
-              </td>
-              <td class="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
-                {{ material.coating ? 'Yes' : 'No' }}
+                {{ machineType.name }}
               </td>
               <td class="whitespace-nowrap px-6 py-4">
-                <span :class="statusBadgeClass(material.status)" class="inline-flex rounded-full px-2 py-1 text-xs font-semibold">
-                  {{ material.status ? 'Active' : 'Inactive' }}
+                <span :class="machineTypeBadgeClass(machineType.machine_type)" class="inline-flex rounded-full px-2 py-1 text-xs font-semibold">
+                  {{ machineTypeLabel(machineType.machine_type) }}
+                </span>
+              </td>
+              <td class="whitespace-nowrap px-6 py-4">
+                <span :class="statusBadgeClass(machineType.status)" class="inline-flex rounded-full px-2 py-1 text-xs font-semibold">
+                  {{ machineType.status ? 'Active' : 'Inactive' }}
                 </span>
               </td>
               <td class="whitespace-nowrap px-6 py-4 text-right text-sm font-medium">
@@ -274,7 +244,7 @@
                   <button
                     v-if="canUpdate"
                     type="button"
-                    @click="openEditModal(material)"
+                    @click="openEditModal(machineType)"
                     class="text-blue-600 hover:text-blue-900"
                     title="Edit"
                   >
@@ -285,7 +255,7 @@
                   <button
                     v-if="canDelete"
                     type="button"
-                    @click="confirmDelete(material)"
+                    @click="confirmDelete(machineType)"
                     class="text-red-600 hover:text-red-900"
                     title="Delete"
                   >
@@ -362,57 +332,57 @@
     <div class="md:hidden">
       <!-- Results Info -->
       <div class="mb-3 text-xs sm:text-sm text-gray-600 text-center">
-        Showing {{ materials.length }} of {{ pagination.total || 0 }} materials
+        Showing {{ machineTypes.length }} of {{ pagination.total || 0 }} machine types
       </div>
 
-      <!-- Material Cards with Infinite Scroll -->
+      <!-- Machine Type Cards with Infinite Scroll -->
       <div 
         ref="scrollContainer"
         class="space-y-3"
       >
         <!-- Loading State -->
-        <div v-if="loading && !materials.length" class="text-center py-12">
+        <div v-if="loading && !machineTypes.length" class="text-center py-12">
           <svg class="mx-auto h-8 w-8 animate-spin text-blue-600" fill="none" viewBox="0 0 24 24">
             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
           </svg>
-          <p class="mt-2 text-sm text-gray-500">Loading materials...</p>
+          <p class="mt-2 text-sm text-gray-500">Loading machine types...</p>
         </div>
 
-        <!-- No Materials State -->
-        <div v-else-if="!materials.length" class="text-center py-12 bg-white rounded-lg shadow-md">
+        <!-- No Machine Types State -->
+        <div v-else-if="!machineTypes.length" class="text-center py-12 bg-white rounded-lg shadow-md">
           <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01" />
           </svg>
-          <p class="mt-2 text-sm text-gray-500">No materials found</p>
+          <p class="mt-2 text-sm text-gray-500">No machine types found</p>
         </div>
 
-        <!-- Material Cards -->
+        <!-- Machine Type Cards -->
         <div
-          v-for="material in materials"
-          :key="material.id"
+          v-for="machineType in machineTypes"
+          :key="machineType.id"
           class="bg-white rounded-lg shadow-md p-4 hover:shadow-lg transition duration-200"
         >
-          <!-- Material Header -->
+          <!-- Machine Type Header -->
           <div class="flex items-start justify-between mb-3">
             <div class="flex items-center space-x-3">
               <div class="h-12 w-12 flex-shrink-0">
                 <div class="flex h-12 w-12 items-center justify-center rounded-full bg-blue-100">
                   <svg class="w-6 h-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01" />
                   </svg>
                 </div>
               </div>
               <div>
-                <h3 class="text-sm font-semibold text-gray-900">{{ material.name }}</h3>
-                <p class="text-xs text-gray-500">ID: {{ material.material_id }}</p>
+                <h3 class="text-sm font-semibold text-gray-900">{{ machineType.name }}</h3>
+                <p class="text-xs text-gray-500">ID: {{ machineType.type_id }}</p>
               </div>
             </div>
             <div class="flex items-center gap-2">
               <button
                 v-if="canUpdate"
                 type="button"
-                @click="openEditModal(material)"
+                @click="openEditModal(machineType)"
                 class="text-blue-600 hover:text-blue-900 p-1"
                 title="Edit"
               >
@@ -423,7 +393,7 @@
               <button
                 v-if="canDelete"
                 type="button"
-                @click="confirmDelete(material)"
+                @click="confirmDelete(machineType)"
                 class="text-red-600 hover:text-red-900 p-1"
                 title="Delete"
               >
@@ -434,24 +404,18 @@
             </div>
           </div>
 
-          <!-- Material Details -->
+          <!-- Machine Type Details -->
           <div class="space-y-2 border-t border-gray-200 pt-3">
             <div class="flex items-center justify-between">
-              <span class="text-xs text-gray-500">Department</span>
-              <span class="text-xs font-medium text-gray-900">{{ material.department?.name || 'N/A' }}</span>
-            </div>
-            <div class="flex items-center justify-between">
-              <span class="text-xs text-gray-500">GSM</span>
-              <span class="text-xs font-medium text-gray-900">{{ material.gsm || 'N/A' }}</span>
-            </div>
-            <div class="flex items-center justify-between">
-              <span class="text-xs text-gray-500">Coating</span>
-              <span class="text-xs font-medium text-gray-900">{{ material.coating ? 'Yes' : 'No' }}</span>
+              <span class="text-xs text-gray-500">Type</span>
+              <span :class="machineTypeBadgeClass(machineType.machine_type)" class="inline-flex rounded-full px-2 py-1 text-xs font-semibold">
+                {{ machineTypeLabel(machineType.machine_type) }}
+              </span>
             </div>
             <div class="flex items-center justify-between">
               <span class="text-xs text-gray-500">Status</span>
-              <span :class="statusBadgeClass(material.status)" class="inline-flex rounded-full px-2 py-1 text-xs font-semibold">
-                {{ material.status ? 'Active' : 'Inactive' }}
+              <span :class="statusBadgeClass(machineType.status)" class="inline-flex rounded-full px-2 py-1 text-xs font-semibold">
+                {{ machineType.status ? 'Active' : 'Inactive' }}
               </span>
             </div>
           </div>
@@ -467,32 +431,31 @@
         </div>
 
         <!-- End of Results -->
-        <div v-if="!pagination.next_page_url && materials.length > 0" class="text-center py-4">
-          <p class="text-xs text-gray-500">No more materials to load</p>
+        <div v-if="!pagination.next_page_url && machineTypes.length > 0" class="text-center py-4">
+          <p class="text-xs text-gray-500">No more machine types to load</p>
         </div>
       </div>
     </div>
 
     <!-- Create/Edit Form Modal -->
-    <MaterialFormModal
+    <MachineTypeFormModal
       :show="showFormModal"
-      :material="selectedMaterial"
-      :departments="departments"
+      :machineType="selectedMachineType"
       @close="closeFormModal"
-      @saved="handleMaterialSaved"
+      @saved="handleMachineTypeSaved"
     />
 
     <!-- Delete Confirmation Modal -->
     <Modal
       :show="deleteModal.show"
       type="danger"
-      title="Delete Material"
-      :message="`Are you sure you want to delete ${deleteModal.material?.name}? This action cannot be undone.`"
+      title="Delete Machine Type"
+      :message="`Are you sure you want to delete ${deleteModal.machineType?.name}? This action cannot be undone.`"
       confirm-text="Delete"
       cancel-text="Cancel"
       :loading="deleteModal.loading"
       @close="deleteModal.show = false"
-      @confirm="deleteMaterial"
+      @confirm="deleteMachineType"
     />
   </AuthenticatedLayout>
 </template>
@@ -502,7 +465,7 @@ import { ref, reactive, computed, watch, onMounted, onUnmounted } from 'vue';
 import { useAuthStore } from '@/stores/auth';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import Modal from '@/Components/Modal.vue';
-import MaterialFormModal from '@/Components/MaterialFormModal.vue';
+import MachineTypeFormModal from '@/Components/MachineTypeFormModal.vue';
 
 const authStore = useAuthStore();
 
@@ -518,19 +481,18 @@ const hasPermission = (permission) => {
   return userPermission[permission] ?? false;
 };
 
-const canCreate = computed(() => hasPermission('material_master_create'));
-const canUpdate = computed(() => hasPermission('material_master_update'));
-const canDelete = computed(() => hasPermission('material_master_delete'));
+const canCreate = computed(() => hasPermission('machine_type_create'));
+const canUpdate = computed(() => hasPermission('machine_type_update'));
+const canDelete = computed(() => hasPermission('machine_type_delete'));
 
 const loading = ref(false);
 const loadingMore = ref(false);
-const materials = ref([]);
-const departments = ref([]);
+const machineTypes = ref([]);
 const perPage = ref(20);
 const scrollContainer = ref(null);
 const showAdvancedFilters = ref(false);
 const showFormModal = ref(false);
-const selectedMaterial = ref(null);
+const selectedMachineType = ref(null);
 
 const pagination = reactive({
   current_page: 1,
@@ -545,27 +507,25 @@ const pagination = reactive({
 
 const filters = reactive({
   search: '',
-  department_id: '',
-  coating: '',
+  machine_type: '',
   status: '',
 });
 
 const deleteModal = reactive({
   show: false,
-  material: null,
+  machineType: null,
   loading: false,
 });
 
 // Check if there are active filters
 const hasActiveFilters = computed(() => {
-  return filters.department_id !== '' || filters.coating !== '' || filters.status !== '';
+  return filters.machine_type !== '' || filters.status !== '';
 });
 
 // Count active filters
 const activeFiltersCount = computed(() => {
   let count = 0;
-  if (filters.department_id) count++;
-  if (filters.coating !== '') count++;
+  if (filters.machine_type) count++;
   if (filters.status !== '') count++;
   return count;
 });
@@ -596,7 +556,18 @@ const visiblePages = computed(() => {
   return pages.filter((v, i, a) => a.indexOf(v) === i);
 });
 
-const fetchMaterials = async (page = pagination.current_page, append = false) => {
+// Watch filters with debounce
+let timeout = null;
+watch(filters, () => {
+  clearTimeout(timeout);
+  timeout = setTimeout(() => {
+    pagination.current_page = 1;
+    machineTypes.value = [];
+    fetchMachineTypes();
+  }, 300);
+}, { deep: true });
+
+const fetchMachineTypes = async (page = pagination.current_page, append = false) => {
   if (append) {
     loadingMore.value = true;
   } else {
@@ -608,11 +579,10 @@ const fetchMaterials = async (page = pagination.current_page, append = false) =>
     params.append('page', page);
     params.append('per_page', perPage.value);
     if (filters.search) params.append('search', filters.search);
-    if (filters.department_id) params.append('department_id', filters.department_id);
-    if (filters.coating !== '') params.append('coating', filters.coating);
+    if (filters.machine_type) params.append('machine_type', filters.machine_type);
     if (filters.status !== '') params.append('status', filters.status);
 
-    const response = await fetch(`/api/materials?${params}`, {
+    const response = await fetch(`/api/machine-types?${params}`, {
       headers: {
         'Authorization': `Bearer ${authStore.token}`,
         'Accept': 'application/json',
@@ -624,9 +594,9 @@ const fetchMaterials = async (page = pagination.current_page, append = false) =>
       const data = result.data;
       
       if (append) {
-        materials.value = [...materials.value, ...(data.data || [])];
+        machineTypes.value = [...machineTypes.value, ...(data.data || [])];
       } else {
-        materials.value = data.data || [];
+        machineTypes.value = data.data || [];
       }
       
       // Update pagination
@@ -642,40 +612,12 @@ const fetchMaterials = async (page = pagination.current_page, append = false) =>
       });
     }
   } catch (error) {
-    console.error('Failed to fetch materials:', error);
+    console.error('Failed to fetch machine types:', error);
   } finally {
     loading.value = false;
     loadingMore.value = false;
   }
 };
-
-const fetchDepartments = async () => {
-  try {
-    const response = await fetch('/api/materials/departments', {
-      headers: {
-        'Authorization': `Bearer ${authStore.token}`,
-        'Accept': 'application/json',
-      },
-    });
-    if (response.ok) {
-      const result = await response.json();
-      departments.value = result.data || [];
-    }
-  } catch (error) {
-    console.error('Failed to fetch departments:', error);
-  }
-};
-
-// Watch filters with debounce - MUST come after fetchMaterials is declared
-let timeout = null;
-watch(filters, () => {
-  clearTimeout(timeout);
-  timeout = setTimeout(() => {
-    pagination.current_page = 1;
-    materials.value = [];
-    fetchMaterials();
-  }, 300);
-}, { deep: true });
 
 // Infinite scroll handler for mobile
 const handleScroll = () => {
@@ -686,60 +628,59 @@ const handleScroll = () => {
   const clientHeight = document.documentElement.clientHeight;
   
   if (scrollTop + clientHeight >= scrollHeight * 0.8) {
-    fetchMaterials(pagination.current_page + 1, true);
+    fetchMachineTypes(pagination.current_page + 1, true);
   }
 };
 
 const handlePerPageChange = () => {
   pagination.current_page = 1;
-  materials.value = [];
-  fetchMaterials();
+  machineTypes.value = [];
+  fetchMachineTypes();
 };
 
 const changePage = (page) => {
   if (page >= 1 && page <= pagination.last_page && page !== '...') {
-    fetchMaterials(page);
+    fetchMachineTypes(page);
   }
 };
 
 const resetFilters = () => {
   filters.search = '';
-  filters.department_id = '';
-  filters.coating = '';
+  filters.machine_type = '';
   filters.status = '';
   showAdvancedFilters.value = false;
 };
 
 const openCreateModal = () => {
-  selectedMaterial.value = null;
+  selectedMachineType.value = null;
   showFormModal.value = true;
 };
 
-const openEditModal = (material) => {
-  selectedMaterial.value = { ...material };
+const openEditModal = (machineType) => {
+  selectedMachineType.value = { ...machineType };
   showFormModal.value = true;
 };
 
 const closeFormModal = () => {
   showFormModal.value = false;
-  selectedMaterial.value = null;
+  selectedMachineType.value = null;
 };
 
-const handleMaterialSaved = () => {
+const handleMachineTypeSaved = () => {
   closeFormModal();
-  materials.value = [];
-  fetchMaterials(pagination.current_page);
+  machineTypes.value = [];
+  fetchMachineTypes(pagination.current_page);
 };
 
-const confirmDelete = (material) => {
-  deleteModal.material = material;
+const confirmDelete = (machineType) => {
+  deleteModal.machineType = machineType;
   deleteModal.show = true;
 };
 
-const deleteMaterial = async () => {
+const deleteMachineType = async () => {
   deleteModal.loading = true;
   try {
-    const response = await fetch(`/api/materials/${deleteModal.material.id}`, {
+    const response = await fetch(`/api/machine-types/${deleteModal.machineType.id}`, {
       method: 'DELETE',
       headers: {
         'Authorization': `Bearer ${authStore.token}`,
@@ -749,15 +690,15 @@ const deleteMaterial = async () => {
 
     if (response.ok) {
       deleteModal.show = false;
-      deleteModal.material = null;
-      materials.value = [];
-      fetchMaterials(pagination.current_page);
+      deleteModal.machineType = null;
+      machineTypes.value = [];
+      fetchMachineTypes(pagination.current_page);
     } else {
-      alert('Failed to delete material');
+      alert('Failed to delete machine type');
     }
   } catch (error) {
     console.error('Delete failed:', error);
-    alert('Failed to delete material');
+    alert('Failed to delete machine type');
   } finally {
     deleteModal.loading = false;
   }
@@ -767,9 +708,30 @@ const statusBadgeClass = (status) => {
   return status ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800';
 };
 
+const machineTypeLabel = (type) => {
+  const labels = {
+    'PRE_PRESS': 'Pre Press',
+    'PRESS': 'Press',
+    'POST_PRESS': 'Post Press',
+    'DIE_CUT': 'Die Cut',
+    'OTHER': 'Other'
+  };
+  return labels[type] || type;
+};
+
+const machineTypeBadgeClass = (type) => {
+  const classes = {
+    'PRE_PRESS': 'bg-purple-100 text-purple-800',
+    'PRESS': 'bg-blue-100 text-blue-800',
+    'POST_PRESS': 'bg-indigo-100 text-indigo-800',
+    'DIE_CUT': 'bg-orange-100 text-orange-800',
+    'OTHER': 'bg-gray-100 text-gray-800'
+  };
+  return classes[type] || 'bg-gray-100 text-gray-800';
+};
+
 onMounted(() => {
-  fetchMaterials();
-  fetchDepartments();
+  fetchMachineTypes();
   
   // Add scroll event listener for infinite scroll on mobile
   window.addEventListener('scroll', handleScroll);

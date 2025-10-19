@@ -7,6 +7,7 @@ import Dashboard from './Pages/Dashboard.vue';
 import UsersIndex from './Pages/Users/Index.vue';
 import MachinesIndex from './Pages/Machines/Index.vue';
 import MaterialsIndex from './Pages/Materials/Index.vue';
+import MachineTypesIndex from './Pages/MachineTypes/Index.vue';
 
 const routes = [
   {
@@ -41,6 +42,12 @@ const routes = [
     path: '/materials',
     name: 'materials.index',
     component: MaterialsIndex,
+    meta: { requiresAuth: true },
+  },
+  {
+    path: '/machine-types',
+    name: 'machine-types.index',
+    component: MachineTypesIndex,
     meta: { requiresAuth: true },
   },
 ];
