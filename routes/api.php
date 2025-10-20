@@ -11,6 +11,7 @@ use App\Http\Controllers\ShiftController;
 use App\Http\Controllers\SectionController;
 use App\Http\Controllers\StatusController;
 use App\Http\Controllers\OrderController;
+use App\Http\Controllers\FormController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -148,5 +149,29 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::put('/{id}', [OrderController::class, 'update'])->name('api.orders.update');
         Route::patch('/{id}/status', [OrderController::class, 'changeStatus'])->name('api.orders.changeStatus');
         Route::delete('/{id}', [OrderController::class, 'destroy'])->name('api.orders.destroy');
+    });
+
+    // Form/Job Management Routes
+    Route::prefix('forms')->group(function () {
+        // List & CRUD
+        Route::get('/', [FormController::class, 'index'])->name('api.forms.index');
+        Route::post('/', [FormController::class, 'store'])->name('api.forms.store');
+        Route::get('/stats', [FormController::class, 'stats'])->name('api.forms.stats');
+        Route::get('/available', [FormController::class, 'getAvailableForms'])->name('api.forms.available');
+        Route::get('/{id}', [FormController::class, 'show'])->name('api.forms.show');
+        Route::put('/{id}', [FormController::class, 'update'])->name('api.forms.update');
+        Route::delete('/{id}', [FormController::class, 'destroy'])->name('api.forms.destroy');
+        
+        // Filtering
+        Route::get('/section/{sectionId}', [FormController::class, 'getFormsBySection'])->name('api.forms.bySection');
+        Route::get('/machine/{machineId}', [FormController::class, 'getFormsByMachine'])->name('api.forms.byMachine');
+        Route::get('/operator/{userId}', [FormController::class, 'getFormsByOperator'])->name('api.forms.byOperator');
+        
+        // Status & Assignments
+        Route::patch('/{id}/status', [FormController::class, 'changeStatus'])->name('api.forms.changeStatus');
+        Route::patch('/{id}/assign-machine', [FormController::class, 'assignMachine'])->name('api.forms.assignMachine');
+        Route::patch('/{id}/assign-operators', [FormController::class, 'assignOperators'])->name('api.forms.assignOperators');
+        Route::patch('/{id}/assign-materials', [FormController::class, 'assignMaterials'])->name('api.forms.assignMaterials');
+        Route::get('/{id}/history', [FormController::class, 'getFormHistory'])->name('api.forms.history');
     });
 });

@@ -17,6 +17,10 @@ import OrdersIndex from './Pages/Orders/Index.vue';
 import OrdersCreate from './Pages/Orders/Create.vue';
 import OrdersEdit from './Pages/Orders/Edit.vue';
 import OrdersShow from './Pages/Orders/Show.vue';
+import FormsIndex from './Pages/Forms/Index.vue';
+import FormsCreate from './Pages/Forms/Create.vue';
+import FormsEdit from './Pages/Forms/Edit.vue';
+import FormsShow from './Pages/Forms/Show.vue';
 
 const routes = [
   {
@@ -112,6 +116,32 @@ const routes = [
     path: '/orders/:id/edit',
     name: 'orders.edit',
     component: OrdersEdit,
+    meta: { requiresAuth: true },
+    props: true,
+  },
+  {
+    path: '/forms',
+    name: 'forms.index',
+    component: FormsIndex,
+    meta: { requiresAuth: true },
+  },
+  {
+    path: '/forms/create',
+    name: 'forms.create',
+    component: FormsCreate,
+    meta: { requiresAuth: true },
+  },
+  {
+    path: '/forms/:id',
+    name: 'forms.show',
+    component: FormsShow,
+    meta: { requiresAuth: true },
+    props: true,
+  },
+  {
+    path: '/forms/:id/edit',
+    name: 'forms.edit',
+    component: FormsEdit,
     meta: { requiresAuth: true },
     props: true,
   },
