@@ -10,6 +10,7 @@ use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\ShiftController;
 use App\Http\Controllers\SectionController;
 use App\Http\Controllers\StatusController;
+use App\Http\Controllers\OrderController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -135,5 +136,17 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::get('/{id}', [StatusController::class, 'show'])->name('api.statuses.show');
         Route::put('/{id}', [StatusController::class, 'update'])->name('api.statuses.update');
         Route::delete('/{id}', [StatusController::class, 'destroy'])->name('api.statuses.destroy');
+    });
+
+    // Order Management Routes
+    Route::prefix('orders')->group(function () {
+        Route::get('/', [OrderController::class, 'index'])->name('api.orders.index');
+        Route::post('/', [OrderController::class, 'store'])->name('api.orders.store');
+        Route::get('/stats', [OrderController::class, 'stats'])->name('api.orders.stats');
+        Route::get('/status/{status}', [OrderController::class, 'byStatus'])->name('api.orders.byStatus');
+        Route::get('/{id}', [OrderController::class, 'show'])->name('api.orders.show');
+        Route::put('/{id}', [OrderController::class, 'update'])->name('api.orders.update');
+        Route::patch('/{id}/status', [OrderController::class, 'changeStatus'])->name('api.orders.changeStatus');
+        Route::delete('/{id}', [OrderController::class, 'destroy'])->name('api.orders.destroy');
     });
 });

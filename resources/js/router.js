@@ -13,6 +13,10 @@ import DepartmentsIndex from './Pages/Departments/Index.vue';
 import ShiftsIndex from './Pages/Shifts/Index.vue';
 import SectionsIndex from './Pages/Sections/Index.vue';
 import StatusesIndex from './Pages/Statuses/Index.vue';
+import OrdersIndex from './Pages/Orders/Index.vue';
+import OrdersCreate from './Pages/Orders/Create.vue';
+import OrdersEdit from './Pages/Orders/Edit.vue';
+import OrdersShow from './Pages/Orders/Show.vue';
 
 const routes = [
   {
@@ -84,6 +88,32 @@ const routes = [
     name: 'statuses.index',
     component: StatusesIndex,
     meta: { requiresAuth: true },
+  },
+  {
+    path: '/orders',
+    name: 'orders.index',
+    component: OrdersIndex,
+    meta: { requiresAuth: true },
+  },
+  {
+    path: '/orders/create',
+    name: 'orders.create',
+    component: OrdersCreate,
+    meta: { requiresAuth: true },
+  },
+  {
+    path: '/orders/:id',
+    name: 'orders.show',
+    component: OrdersShow,
+    meta: { requiresAuth: true },
+    props: true,
+  },
+  {
+    path: '/orders/:id/edit',
+    name: 'orders.edit',
+    component: OrdersEdit,
+    meta: { requiresAuth: true },
+    props: true,
   },
 ];
 

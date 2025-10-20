@@ -21,9 +21,12 @@ class Order extends Model
         'finish_quantity',
         'remark',
         'client_name',
+        'title',
+        'description',
+        'priority',
+        'status',
         'pro_name',
         'ref_no',
-        'status',
         'closed',
         'material_id',
         'process_id',
@@ -31,7 +34,6 @@ class Order extends Model
     ];
 
     protected $casts = [
-        'status' => 'boolean',
         'closed' => 'boolean',
         'delivery_date' => 'date',
         'production_start' => 'date',

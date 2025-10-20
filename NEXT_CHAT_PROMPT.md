@@ -1,578 +1,694 @@
-# 🚀 Quick Start - Next Chat Session
+# 🚀 NEXT CHAT SESSION PROMPT - Form/Job Management
 
-## 📊 Current Status
-
-**Project**: Phoenix Manufacturing System  
-**Progress**: 65% Complete  
-**Phase**: Production Core Development  
-**All Master Modules**: ✅ COMPLETE  
+**Copy and paste this entire prompt in your next chat with Claude**
 
 ---
 
-## 🎯 COPY & PASTE THIS PROMPT
-
-```
 I'm continuing the Phoenix Manufacturing System development.
 
-Project Location: /Users/thamjeedlal/Herd/pheonixFullstack/
+**Project Location**: `/Users/thamjeedlal/Herd/pheonixFullstack/`
 
-CURRENT STATUS (65% Complete):
-✅ Phase 0: Documentation - Complete
-✅ Phase 1: Database & Models - Complete (36 tables, 30 models, 162+ relationships)
-✅ Phase 2: All 10 Master Modules - Complete
-   - Authentication & Login ✅
-   - User Management ✅
-   - Machine Management ✅
-   - Machine Type Management ✅
-   - Material Management ✅
-   - Department Management ✅
-   - Process Management ✅
-   - Shift Management ✅
-   - Status Management ✅
-   - Section Management ✅
+## CURRENT STATUS (68% Complete):
 
-WHAT'S WORKING:
-✅ 50+ API endpoints
-✅ 35+ responsive pages (mobile + desktop)
-✅ Permission-based access control
-✅ Sanctum authentication
-✅ Complete CRUD for all master data
-✅ Mobile-first responsive design
-✅ Floating filter bars
-✅ Infinite scroll / Pagination
+✅ **Phase 0**: Documentation - Complete  
+✅ **Phase 1**: Database & Models - Complete (36 tables, 30 models, 162+ relationships)  
+✅ **Phase 2**: All 10 Master Modules - Complete  
+✅ **Phase 3**: Production Core - IN PROGRESS (1/5 modules done)
+   - ✅ Order Management - COMPLETE  
+   - ⏭️ Form/Job Management - START HERE
 
-NEXT PHASE: Production Core Modules (35% remaining)
+## WHAT'S WORKING:
+- 58+ API endpoints
+- 39+ responsive pages (mobile + desktop)
+- Permission-based access control
+- Complete CRUD for all master data + orders
+- Mobile-first responsive design
+- Floating filter bars, infinite scroll, pagination
 
-I want to start with MODULE 11: ORDER MANAGEMENT
+## WHAT I NEED NOW:
 
-This is the foundation for the production workflow. Orders (Job Cards) contain sections, and sections contain forms (production jobs).
+Build **MODULE 12: FORM/JOB MANAGEMENT** - the most critical and complex module.
 
-Please read these files first:
-1. PROJECT_STATUS_COMPLETE.md - Shows what's done and what's remaining
-2. NEXT_PHASE_PRODUCTION_GUIDE.md - Complete implementation guide
-3. PROGRESS_TRACKER.md - Detailed progress tracking
+This is the heart of the production system. Forms (Production Jobs) connect orders, sections, machines, operators, and materials together.
 
-Then create the Order Management module following these specifications:
+**Please read these files first:**
+1. `/Users/thamjeedlal/Herd/pheonixFullstack/PROGRESS_TRACKER.md` - Shows current progress
+2. `/Users/thamjeedlal/Herd/pheonixFullstack/NEXT_PHASE_PRODUCTION_GUIDE.md` - Complete implementation guide
+3. `/Users/thamjeedlal/Herd/pheonixFullstack/ORDER_MANAGEMENT_COMPLETE.md` - Reference for patterns
 
-═══════════════════════════════════════════════════════════
-BACKEND TO CREATE:
-═══════════════════════════════════════════════════════════
+**Reference Implementation:**
+- `/Users/thamjeedlal/Herd/pheonixFullstack/resources/js/Pages/Orders/Index.vue` - Follow this pattern
+- `/Users/thamjeedlal/Herd/pheonixFullstack/app/Http/Controllers/OrderController.php` - Follow this structure
 
-1. app/Http/Controllers/OrderController.php (8 methods):
-   - index(Request $request)
-     * List orders with pagination
-     * Search by job_card_no, client_name, title
-     * Filter by status (pending/in_progress/completed/cancelled)
-     * Filter by priority (low/normal/high/urgent)
-     * Filter by date_from, date_to
-     * Eager load relationships: sections, createdBy
-     * Sort by latest first
-     * Return OrderResource collection
-   
-   - store(OrderRequest $request)
-     * Create new order (job card)
-     * Use DB transaction
-     * Set created_by to auth user
-     * Return OrderResource
-   
-   - show($id)
-     * Get order with sections.forms relationship
-     * Return OrderResource
-   
-   - update(OrderRequest $request, $id)
-     * Update order
-     * Use DB transaction
-     * Return OrderResource
-   
-   - destroy($id)
-     * Check if order has forms (prevent delete if yes)
-     * Use DB transaction
-     * Soft delete order
-     * Return success response
-   
-   - stats()
-     * Total orders count
-     * Pending, in_progress, completed counts
-     * Urgent orders count
-     * This month orders count
-     * Return stats array
-   
-   - changeStatus(Request $request, $id)
-     * Validate status field
-     * Update order status
-     * Use DB transaction
-     * Return OrderResource
-   
-   - byStatus($status)
-     * Filter orders by status
-     * Return OrderResource collection
+---
 
-2. app/Http/Requests/OrderRequest.php:
-   Rules:
-   - job_card_no: required, string, max:50, unique (except on update)
-   - client_name: required, string, max:255
-   - title: required, string, max:500
-   - description: nullable, string
-   - delivery_date: required, date, after_or_equal:today
-   - priority: nullable, in:low,normal,high,urgent
-   - status: nullable, in:pending,in_progress,completed,cancelled
-   
-   Custom messages:
-   - Clear, user-friendly error messages
-   
-   Error handling:
-   - Return JSON response with 422 status code
+## FORM/JOB MANAGEMENT SPECIFICATIONS:
 
-3. app/Http/Resources/OrderResource.php:
-   Transform:
-   - All order fields (id, job_card_no, client_name, title, description, delivery_date, priority, status)
-   - sections: map to array with id, section_no, section_name, forms_count
-   - createdBy: map to id, name
-   - created_at, updated_at timestamps
+### Background:
+Forms represent production jobs. Each form:
+- Belongs to a section (which belongs to an order)
+- Is assigned to ONE machine
+- Has MULTIPLE operators assigned
+- Has MULTIPLE materials assigned (with quantities)
+- Goes through 8 status states
+- Tracks button actions (make ready, start, pause, stop, complete)
+- Records DMI data during production
+- Requires quality verification
+- Needs line clearance
 
-4. routes/api.php - Add these routes:
-   
-   Group with auth:sanctum and order_view permission:
-   - GET /api/orders
-   - GET /api/orders/stats
-   - GET /api/orders/status/{status}
-   - GET /api/orders/{id}
-   
-   Group with auth:sanctum and order_create permission:
-   - POST /api/orders
-   
-   Group with auth:sanctum and order_update permission:
-   - PUT /api/orders/{id}
-   - PATCH /api/orders/{id}/status
-   
-   Group with auth:sanctum and order_delete permission:
-   - DELETE /api/orders/{id}
+### Form Status States (8):
+1. `job_pending` - Created, not started
+2. `make_ready` - Preparation phase
+3. `job_started` - Production running
+4. `paused` - Temporarily stopped (with reason)
+5. `stopped` - Halted (with reason, cannot resume)
+6. `job_completed` - Production finished
+7. `quality_verified` - QC approved
+8. `line_cleared` - Ready for next job
 
-Technical Requirements:
-- Use ApiResponseTrait for all responses
-- Use DB::beginTransaction() and DB::commit() for all write operations
-- Try-catch blocks for error handling
-- Eager load relationships to avoid N+1 queries
-- Return proper HTTP status codes (200, 201, 404, 500)
-- JSON responses with structure: {success, message, data}
+### Button State Machine:
+```
+pending → [Make Ready] → make_ready
+make_ready → [Start Production] → job_started
+job_started → [Pause] → paused (requires reason)
+paused → [Resume] → job_started
+job_started → [Stop] → stopped (requires reason, final)
+job_started → [Complete] → job_completed
+```
 
-═══════════════════════════════════════════════════════════
-FRONTEND TO CREATE:
-═══════════════════════════════════════════════════════════
+---
 
-1. resources/js/Pages/Orders/Index.vue:
+## BACKEND TO CREATE:
 
-MOBILE VIEW (< 768px):
-- Floating filter bar (sticky below navbar, h-14, bg-white, shadow-md)
-  * Search input (always visible, with search icon)
-  * Advanced filter button (shows badge with active filter count)
-  * Dropdown with filters:
-    - Status filter (select)
-    - Priority filter (select)
-    - Date from/to (date inputs)
-    - Apply button
-    - Reset button
-  
-- Order cards (shadow-md, rounded-lg, p-4, mb-3):
-  * Job card number (bold, text-lg)
-  * Client name (text-gray-600)
-  * Title (text-sm)
-  * Status badge (colored, rounded-full)
-  * Priority badge (colored, rounded-full)
-  * Delivery date (with icon)
-  * Sections count badge
-  * Edit and Delete buttons (icon buttons)
-  
-- Infinite scroll:
-  * Load more on scroll
-  * Loading spinner at bottom
-  * "No more orders" message when done
+### 1. app/Http/Controllers/FormController.php (15 methods):
 
-- Create button (floating, bottom-right, rounded-full, large)
+**List & CRUD Methods:**
+- `index(Request $request)` - List forms with advanced filtering
+  * Search by form_name, form_no
+  * Filter by section_id, machine_id, status
+  * Filter by operator (check form_user_assignments)
+  * Filter by date_from, date_to (schedule_date)
+  * Eager load: section.order, machine, operators (via formUserAssignments.user), materials (via formMaterialAssignments.material)
+  * Sort by latest schedule_date
+  * Return FormResource collection with pagination
 
-DESKTOP VIEW (≥ 768px):
-- Filter row (full width, bg-gray-50, p-4, rounded-lg, mb-4):
-  * Search input (w-64)
-  * Status select
-  * Priority select
-  * Date from input
-  * Date to input
-  * Reset button
-  
-- Data table:
-  * Columns: Job Card No, Client Name, Title, Sections, Status, Priority, Delivery Date, Actions
-  * Sortable headers (hover effect)
-  * Row hover effect
-  * Status badge in cell
-  * Priority badge in cell
-  * Actions: View, Edit, Delete (icon buttons with tooltips)
-  
-- Pagination:
-  * Page numbers
-  * Previous/Next buttons
-  * Per-page selector (10, 20, 50, 100)
-  * Total count display
+- `store(FormRequest $request)` - Create new form
+  * Create form record
+  * Assign machine (form.machine_id)
+  * Assign operators (create formUserAssignments records)
+  * Assign materials (create formMaterialAssignments records with quantities)
+  * Set status to 'job_pending'
+  * Use DB transaction
+  * Return FormResource
 
-- Create button (top-right, regular button)
+- `show($id)` - View form with all relationships
+  * Eager load: section.order, machine.machineType, operators, materials, buttonActions, dmiData
+  * Return FormResource
 
-Features:
+- `update(FormRequest $request, $id)` - Update form
+  * Update form details
+  * Can update machine_id
+  * Can update schedule_date
+  * Can update operators (delete old, create new assignments)
+  * Can update materials (delete old, create new assignments)
+  * Use DB transaction
+  * Return FormResource
+
+- `destroy($id)` - Delete form
+  * Check if status is 'job_pending' (can only delete pending forms)
+  * Delete form_user_assignments
+  * Delete form_material_assignments
+  * Delete form
+  * Use DB transaction
+
+**Statistics & Filtering:**
+- `stats()` - Form statistics
+  * Total forms
+  * Count per status (all 8 statuses)
+  * Forms by machine (top 5)
+  * Forms scheduled today
+  * Overdue forms
+
+- `getFormsBySection($sectionId)` - Forms for a section
+  * Filter by section_id
+  * Return FormResource collection
+
+- `getFormsByMachine($machineId)` - Forms for a machine
+  * Filter by machine_id
+  * Return FormResource collection
+
+- `getFormsByOperator($userId)` - Forms for an operator
+  * Join with form_user_assignments
+  * Filter by user_id
+  * Return FormResource collection
+
+- `getAvailableForms()` - Forms ready for production
+  * status = 'job_pending'
+  * schedule_date <= today
+  * has machine_id
+  * has operators
+  * has materials
+  * Return FormResource collection
+
+**Status Management:**
+- `changeStatus(Request $request, $id)` - Update form status
+  * Validate new status
+  * Validate state machine transitions
+  * Update form.status
+  * Return FormResource
+
+**Assignment Methods:**
+- `assignMachine(Request $request, $id)` - Assign/change machine
+  * Validate machine_id exists
+  * Update form.machine_id
+  * Return FormResource
+
+- `assignOperators(Request $request, $id)` - Assign multiple operators
+  * Validate user_ids exist
+  * Delete existing formUserAssignments
+  * Create new formUserAssignments
+  * Use DB transaction
+  * Return FormResource
+
+- `assignMaterials(Request $request, $id)` - Assign materials with quantities
+  * Validate material_ids and quantities
+  * Delete existing formMaterialAssignments
+  * Create new formMaterialAssignments
+  * Use DB transaction
+  * Return FormResource
+
+**Additional:**
+- `getFormHistory($id)` - Get status change history
+  * Get all formButtonActions for this form
+  * Order by created_at
+  * Return timeline data
+
+---
+
+### 2. app/Http/Requests/FormRequest.php:
+
+**Validation Rules:**
+```php
+'form_no' => 'required|string|max:50|unique:forms,form_no,' . $formId
+'form_name' => 'required|string|max:255'
+'section_id' => 'required|exists:sections,id'
+'machine_id' => 'nullable|exists:machines,id'
+'schedule_date' => 'required|date|after_or_equal:today'
+'status' => 'nullable|in:job_pending,make_ready,job_started,paused,stopped,job_completed,quality_verified,line_cleared'
+'operator_ids' => 'nullable|array'
+'operator_ids.*' => 'exists:users,id'
+'material_ids' => 'nullable|array'
+'material_ids.*' => 'exists:materials,id'
+'material_quantities' => 'nullable|array'
+'material_quantities.*' => 'numeric|min:0'
+```
+
+**Custom error messages** for all fields.
+
+---
+
+### 3. app/Http/Resources/FormResource.php:
+
+**Transform:**
+```php
+'id' => $this->id
+'form_no' => $this->form_no
+'form_name' => $this->form_name
+'schedule_date' => $this->schedule_date
+'schedule_date_formatted' => formatted date
+'status' => $this->status
+'status_label' => human readable status
+'section' => [
+    'id', 'section_no', 'section_name',
+    'order' => ['id', 'job_card_no', 'client_name']
+]
+'machine' => [
+    'id', 'machine_id', 'machine_name',
+    'machine_type' => ['id', 'name']
+]
+'operators' => collection of operators with [
+    'id', 'name', 'emp_code', 'department'
+]
+'materials' => collection of materials with [
+    'id', 'material_name', 'material_code',
+    'quantity_assigned' => from formMaterialAssignments
+]
+'button_actions_count' => count of actions
+'created_at', 'updated_at'
+```
+
+---
+
+### 4. routes/api.php - Add Form routes:
+
+```php
+// Form Management Routes
+Route::middleware(['auth:sanctum'])->prefix('forms')->group(function () {
+    // List & CRUD
+    Route::get('/', [FormController::class, 'index']);
+    Route::post('/', [FormController::class, 'store']);
+    Route::get('/stats', [FormController::class, 'stats']);
+    Route::get('/available', [FormController::class, 'getAvailableForms']);
+    Route::get('/{id}', [FormController::class, 'show']);
+    Route::put('/{id}', [FormController::class, 'update']);
+    Route::delete('/{id}', [FormController::class, 'destroy']);
+    
+    // Filtering
+    Route::get('/section/{sectionId}', [FormController::class, 'getFormsBySection']);
+    Route::get('/machine/{machineId}', [FormController::class, 'getFormsByMachine']);
+    Route::get('/operator/{userId}', [FormController::class, 'getFormsByOperator']);
+    
+    // Status & Assignments
+    Route::patch('/{id}/status', [FormController::class, 'changeStatus']);
+    Route::patch('/{id}/assign-machine', [FormController::class, 'assignMachine']);
+    Route::patch('/{id}/assign-operators', [FormController::class, 'assignOperators']);
+    Route::patch('/{id}/assign-materials', [FormController::class, 'assignMaterials']);
+    Route::get('/{id}/history', [FormController::class, 'getFormHistory']);
+});
+```
+
+**Total**: 15 endpoints
+
+---
+
+## FRONTEND TO CREATE:
+
+### 1. resources/js/Pages/Forms/Index.vue
+
+**Follow the exact pattern from Orders/Index.vue but with these differences:**
+
+**Mobile View (< 768px):**
+- Floating filter bar with:
+  * Search input (form_no, form_name)
+  * Advanced filters dropdown:
+    - Section filter (dropdown from API)
+    - Machine filter (dropdown from API)
+    - Status filter (all 8 statuses)
+    - Operator filter (dropdown from API)
+    - Schedule date from/to
+- Card view with:
+  * Form number (bold, large)
+  * Form name
+  * Section info with order link
+  * Machine badge
+  * Operator count badge
+  * Material count badge
+  * Status badge (colored per status)
+  * Schedule date
+  * View/Edit/Delete buttons
+
+**Desktop View (≥ 768px):**
+- Filter row with all filters
+- Data table columns:
+  * Form No
+  * Form Name
+  * Section (with order)
+  * Machine
+  * Operators (count with tooltip)
+  * Materials (count with tooltip)
+  * Status
+  * Schedule Date
+  * Actions
+- Pagination with per-page selector
+
+**Common Features:**
 - Debounced search (300ms)
-- Filter persistence
 - Active filter badge counter
-- Loading states for all actions
-- Empty state message
-- Error handling with toast notifications
-- Delete confirmation modal
-- Permission checks (order_view, order_create, order_update, order_delete)
+- Loading states
+- Empty states
+- Delete confirmation (only for job_pending status)
+- Status color coding:
+  * job_pending: gray
+  * make_ready: yellow
+  * job_started: green
+  * paused: orange
+  * stopped: red
+  * job_completed: blue
+  * quality_verified: purple
+  * line_cleared: teal
 
-Status Badge Colors:
-- pending: bg-gray-500
-- in_progress: bg-blue-500
-- completed: bg-green-500
-- cancelled: bg-red-500
+---
 
-Priority Badge Colors:
-- low: bg-gray-400
-- normal: bg-blue-400
-- high: bg-orange-500
-- urgent: bg-red-500
+### 2. resources/js/Pages/Forms/Create.vue
 
-2. resources/js/Pages/Orders/Create.vue:
+**Multi-Step Wizard OR Single Long Form** (your choice, but wizard is better UX):
 
-Layout:
-- Page title: "Create New Order"
-- Form card (max-w-2xl, centered, shadow-md, rounded-lg, p-6)
+**If Single Form:**
+- Section selector (dropdown, shows section_no and section_name)
+- Form number input (auto-generate option)
+- Form name input (required)
+- Schedule date picker (min: today)
+- Machine selector (dropdown, shows machine_id and machine_name)
+- Operators multi-select (checkbox list or multi-select dropdown)
+- Materials section:
+  * Material selector
+  * Quantity input
+  * Add Material button
+  * List of added materials with quantity
+  * Remove material option
+- Submit button
+- Cancel button
 
-Form fields:
-1. Job Card Number:
-   - Text input
-   - Required, unique validation
-   - Auto-generate button (optional feature)
-   - Error message display
-   
-2. Client Name:
-   - Text input
-   - Required validation
-   - Error message display
-   
-3. Title:
-   - Text input
-   - Required validation
-   - Max length: 500
-   - Error message display
-   
-4. Description:
-   - Textarea (rows: 4)
-   - Optional
-   - Character counter
-   
-5. Delivery Date:
-   - Date picker
-   - Required validation
-   - Must be today or future
-   - Error message display
-   
-6. Priority:
-   - Select dropdown
-   - Options: Low, Normal, High, Urgent
-   - Default: Normal
-   
-Buttons:
-- Submit button (primary, full-width on mobile)
-  * Loading spinner when submitting
-  * Disabled when loading
-- Cancel button (secondary, full-width on mobile)
-  * Navigate back to orders list
+**If Wizard (recommended):**
+- Step 1: Basic Info
+  * Section selector
+  * Form number (auto-generate)
+  * Form name
+  * Schedule date
+  * Next button
 
-Features:
+- Step 2: Machine Assignment
+  * Machine selector with search
+  * Machine details preview
+  * Previous/Next buttons
+
+- Step 3: Operator Assignment
+  * Multi-select operator list
+  * Selected operators display
+  * Previous/Next buttons
+
+- Step 4: Material Assignment
+  * Material search/select
+  * Quantity input
+  * Add to list
+  * List of assigned materials
+  * Previous/Next buttons
+
+- Step 5: Review & Confirm
+  * Summary of all selections
+  * Edit buttons for each section
+  * Previous/Submit buttons
+
+**Features:**
+- Progress indicator (if wizard)
 - Form validation
-- Show validation errors
-- Loading state during submission
-- Success message on create
-- Redirect to orders list on success
-- Error handling with toast
-- Responsive layout (stack on mobile)
+- Error handling
+- Loading state
+- Success redirect to forms list
 
-3. resources/js/Pages/Orders/Edit.vue:
+---
 
-Same as Create.vue but:
-- Pre-fill form with order data
-- Page title: "Edit Order"
-- Load order data on mount
-- Update API endpoint instead of create
-- Success message: "Order updated successfully"
+### 3. resources/js/Pages/Forms/Edit.vue
 
-4. resources/js/Pages/Orders/Show.vue:
-
-Layout:
-- Page header with back button
-- Action buttons: Edit, Delete (with permission checks)
-
-Order Details Card:
-- Job Card Number (large, bold)
-- Client Name
-- Title
-- Description
-- Delivery Date (with countdown if pending)
-- Priority badge
-- Status badge
-- Created by info
-- Created at timestamp
-
-Sections Card:
-- Section list (if any):
-  * Section number
-  * Section name
-  * Forms count badge
-  * View section link
-- Empty state if no sections
-- Add Section button (if has permission)
-
-Timeline Card (optional for v1):
-- Order created event
-- Status change events
-- Timestamps for each event
-
-Buttons:
-- Back to orders list
-- Edit order (if has order_update permission)
-- Delete order (if has order_delete permission and no forms)
-
-Features:
-- Load order with relationships
+**Similar to Create but:**
+- Pre-fill all form data
+- Show current assignments
+- Allow updating all fields
+- Allow reassigning machine
+- Allow adding/removing operators
+- Allow adding/removing/updating materials
+- Update button
+- Cancel button
 - Loading state while fetching
-- Error handling if order not found
-- Delete confirmation modal
-- Permission-based button visibility
-- Responsive layout
 
-5. Update resources/js/Components/Sidebar.vue:
+---
 
-Add Orders menu item after Dashboard:
+### 4. resources/js/Pages/Forms/Show.vue (MOST IMPORTANT PAGE)
+
+**This is the production operations screen!**
+
+**Layout Sections:**
+
+**Header:**
+- Form number (large, bold)
+- Form name
+- Status badge (large, colored)
+- Back button
+- Edit button
+- Delete button (only if job_pending)
+
+**Order & Section Card:**
+- Order job card number (link to order)
+- Client name
+- Section number and name
+- Schedule date
+
+**Machine Card:**
+- Machine ID and name
+- Machine type
+- Current status
+- Assigned operators (list)
+
+**Operators Card:**
+- List of assigned operators
+- Employee code
+- Name
+- Department
+- Shift (if available)
+
+**Materials Card:**
+- Table of assigned materials
+- Material code, name
+- Quantity assigned
+- Quantity consumed (from DMI - prepare for future)
+- Remaining quantity
+
+**Operation Panel Card (CRITICAL):**
+This contains the production control buttons.
+
+Button visibility based on status:
+```
+If status = 'job_pending':
+  - Show [Make Ready] button (enabled)
+  
+If status = 'make_ready':
+  - Show [Make Ready] button (disabled, completed)
+  - Show [Start Production] button (enabled)
+  
+If status = 'job_started':
+  - Show [Make Ready] button (disabled)
+  - Show [Start Production] button (disabled, completed)
+  - Show [Pause] button (enabled)
+  - Show [Stop] button (enabled)
+  - Show [Complete] button (enabled)
+  
+If status = 'paused':
+  - Show [Pause] button (disabled, completed)
+  - Show [Resume] button (enabled)
+  
+If status = 'stopped':
+  - Show [Stop] button (disabled, completed)
+  - Show message "Form stopped. Create new form to continue."
+  
+If status = 'job_completed':
+  - All production buttons disabled
+  - Show [Verify Quality] button (for future QC module)
+```
+
+**Button Actions:**
+- Make Ready: Click → Confirm → API call to change status → Reload
+- Start Production: Click → Confirm → API call → Reload
+- Pause: Click → Show reason modal → Submit reason → API call → Reload
+- Resume: Click → Confirm → API call → Reload
+- Stop: Click → Show reason modal → Submit reason → API call → Reload
+- Complete: Click → Confirm → API call → Reload
+
+**Button Action History Card:**
+- Timeline view (vertical)
+- Each action shows:
+  * Action name
+  * User who performed
+  * Timestamp
+  * Reason (if pause/stop)
+  * Duration (calculate time between actions)
+- Order by created_at DESC
+
+**Quality Section (Placeholder):**
+- Show "Quality verification pending" if job_completed
+- Show "Quality verified" if quality_verified
+- Prepare for Module 14
+
+**Line Clearance Section (Placeholder):**
+- Show "Line clearance pending" if quality_verified
+- Show "Line cleared" if line_cleared
+- Prepare for Module 14
+
+---
+
+### 5. Update Sidebar.vue
+
+Add Forms menu item after Orders:
+
 ```vue
 <router-link
-  v-if="hasPermission('order_view')"
-  to="/orders"
-  class="sidebar-menu-item"
-  :class="{ 'active': $route.path.startsWith('/orders') }"
+  to="/forms"
+  class="flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition duration-200"
+  :class="{ 'bg-blue-50 text-blue-600': $route.path.startsWith('/forms') }"
 >
-  <ClipboardList class="w-5 h-5" />
-  <span v-if="!collapsed">Orders</span>
+  <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+  </svg>
+  <span v-if="open" class="font-medium">Forms</span>
 </router-link>
 ```
 
-Icon: Use ClipboardList from lucide-react
-Active state: Highlight when on orders pages
-Permission check: order_view
+---
 
-6. Update resources/js/router.js:
+### 6. Update router.js
 
-Import components:
 ```javascript
-import OrdersIndex from './Pages/Orders/Index.vue';
-import OrdersCreate from './Pages/Orders/Create.vue';
-import OrdersEdit from './Pages/Orders/Edit.vue';
-import OrdersShow from './Pages/Orders/Show.vue';
-```
+import FormsIndex from './Pages/Forms/Index.vue';
+import FormsCreate from './Pages/Forms/Create.vue';
+import FormsEdit from './Pages/Forms/Edit.vue';
+import FormsShow from './Pages/Forms/Show.vue';
 
-Add routes:
-```javascript
+// Add routes:
 {
-  path: '/orders',
-  name: 'orders.index',
-  component: OrdersIndex,
-  meta: { requiresAuth: true, permission: 'order_view' }
+  path: '/forms',
+  name: 'forms.index',
+  component: FormsIndex,
+  meta: { requiresAuth: true }
 },
 {
-  path: '/orders/create',
-  name: 'orders.create',
-  component: OrdersCreate,
-  meta: { requiresAuth: true, permission: 'order_create' }
+  path: '/forms/create',
+  name: 'forms.create',
+  component: FormsCreate,
+  meta: { requiresAuth: true }
 },
 {
-  path: '/orders/:id',
-  name: 'orders.show',
-  component: OrdersShow,
-  meta: { requiresAuth: true, permission: 'order_view' }
+  path: '/forms/:id',
+  name: 'forms.show',
+  component: FormsShow,
+  meta: { requiresAuth: true },
+  props: true
 },
 {
-  path: '/orders/:id/edit',
-  name: 'orders.edit',
-  component: OrdersEdit,
-  meta: { requiresAuth: true, permission: 'order_update' }
+  path: '/forms/:id/edit',
+  name: 'forms.edit',
+  component: FormsEdit,
+  meta: { requiresAuth: true },
+  props: true
 }
 ```
 
-═══════════════════════════════════════════════════════════
-DESIGN REQUIREMENTS:
-═══════════════════════════════════════════════════════════
+---
 
-- Follow established patterns from completed master modules
-- Use Tailwind CSS utility classes
+## DESIGN REQUIREMENTS:
+
+**Follow established patterns:**
 - Mobile-first responsive design
-- Touch-friendly buttons (min 44x44px)
-- Smooth transitions and animations
-- Loading states for all async operations
-- Error handling with user-friendly messages
+- Floating filter bars on mobile
+- Data tables on desktop
+- Card views on mobile
+- Debounced search (300ms)
+- Loading states everywhere
 - Empty states with helpful messages
-- Confirmation dialogs for destructive actions
-- Debounced search (300ms delay)
-- Proper spacing and typography
-- Accessible (keyboard navigation, ARIA labels)
+- Confirmation for destructive actions
+- Status badges with appropriate colors
+- Touch-friendly buttons (44x44px minimum)
+- Clean, modern Tailwind CSS styling
 
-Colors (use Tailwind classes):
-- Primary: blue-600
-- Success: green-500
-- Warning: yellow-500
-- Danger: red-500
-- Gray scale: gray-50 to gray-900
-
-Typography:
-- Page titles: text-2xl font-bold
-- Section titles: text-lg font-semibold
-- Body text: text-base
-- Small text: text-sm
-- Labels: text-sm font-medium text-gray-700
-
-═══════════════════════════════════════════════════════════
-TESTING CHECKLIST:
-═══════════════════════════════════════════════════════════
-
-Backend (use Postman):
-[ ] GET /api/orders - Returns paginated list
-[ ] GET /api/orders?search=ABC - Search works
-[ ] GET /api/orders?status=pending - Filter works
-[ ] GET /api/orders?priority=urgent - Priority filter works
-[ ] GET /api/orders/stats - Returns statistics
-[ ] POST /api/orders - Creates order with valid data
-[ ] POST /api/orders - Rejects invalid data (422)
-[ ] POST /api/orders - Rejects duplicate job_card_no
-[ ] GET /api/orders/{id} - Returns order with sections
-[ ] PUT /api/orders/{id} - Updates order
-[ ] PATCH /api/orders/{id}/status - Changes status
-[ ] DELETE /api/orders/{id} - Deletes order without forms
-[ ] DELETE /api/orders/{id} - Rejects delete if has forms
-[ ] All endpoints check permissions
-
-Frontend (browser DevTools):
-[ ] /orders page loads without errors
-[ ] Desktop: Shows table view
-[ ] Mobile: Shows card view
-[ ] Mobile: Floating filter bar sticky and working
-[ ] Search works with debounce
-[ ] Status filter works
-[ ] Priority filter works
-[ ] Date filters work
-[ ] Reset filters works
-[ ] Active filter badge shows correct count
-[ ] Desktop pagination works
-[ ] Mobile infinite scroll works
-[ ] Can navigate to create page
-[ ] Create form validates properly
-[ ] Can create order successfully
-[ ] Redirects to list after create
-[ ] Can view order details
-[ ] Can edit order
-[ ] Can delete order (with confirmation)
-[ ] Cannot delete order with forms
-[ ] Status badges show correct colors
-[ ] Priority badges show correct colors
-[ ] Sidebar menu works
-[ ] Active state highlighting works
-[ ] Permission checks work (hide buttons if no permission)
-[ ] Responsive on mobile (test at 375px width)
-[ ] Touch-friendly on mobile
-[ ] No console errors
-[ ] Loading states show properly
-[ ] Error messages display correctly
-
-═══════════════════════════════════════════════════════════
-BUILD ORDER:
-═══════════════════════════════════════════════════════════
-
-1. Create backend files first:
-   - OrderController
-   - OrderRequest  
-   - OrderResource
-   - Update routes
-
-2. Test backend with Postman (all endpoints)
-
-3. Create frontend files:
-   - Orders/Index.vue (most complex, build carefully)
-   - Orders/Create.vue
-   - Orders/Edit.vue
-   - Orders/Show.vue
-
-4. Update Sidebar and Router
-
-5. Test frontend thoroughly in browser
-
-6. Test responsive design in DevTools
-
-7. Fix any bugs found
-
-Build complete, production-ready code with proper error handling, validation, and responsive design following all established patterns.
-
-The Order module is the foundation for the entire production workflow, so it must be solid and well-tested before moving to Form Management.
+**Status Color Scheme:**
+```
+job_pending: bg-gray-100 text-gray-800
+make_ready: bg-yellow-100 text-yellow-800
+job_started: bg-green-100 text-green-800
+paused: bg-orange-100 text-orange-800
+stopped: bg-red-100 text-red-800
+job_completed: bg-blue-100 text-blue-800
+quality_verified: bg-purple-100 text-purple-800
+line_cleared: bg-teal-100 text-teal-800
 ```
 
 ---
 
-## 📋 What You'll Have After This
+## CRITICAL NOTES:
 
-✅ Complete Order (Job Card) Management System  
-✅ Create, view, edit, delete orders  
-✅ Search and filter orders  
-✅ Link sections to orders  
-✅ Track order status and priority  
-✅ Manage delivery dates  
-✅ Fully responsive UI (mobile + desktop)  
-✅ Permission-based access control  
-✅ 8 new API endpoints  
-✅ 4 new frontend pages  
-
----
-
-## 🎯 After Order Management
-
-Next will be **Form/Job Management** - the most complex and critical module that handles actual production jobs.
+1. **This is the most complex module** - take your time, build it carefully
+2. **Button state machine is crucial** - test all transitions thoroughly
+3. **Relationships are complex** - forms connect to many tables
+4. **Operation Panel is the heart** - operators will use this daily
+5. **Status changes must be validated** - cannot skip states
+6. **Prepare for Module 13** - DMI data will be added later
+7. **Material quantities** - track assigned vs consumed (consumed comes later)
+8. **Operator assignments** - support multiple operators per form
+9. **Machine availability** - one form per machine at a time (check this)
 
 ---
 
-## 📁 Key Files Reference
+## TESTING CHECKLIST:
 
-- **PROJECT_STATUS_COMPLETE.md** - Full status summary
-- **NEXT_PHASE_PRODUCTION_GUIDE.md** - Complete guide with code examples
-- **PROGRESS_TRACKER.md** - Detailed progress tracking
-- **API_DOCUMENTATION.md** - API reference
+### Backend (Postman):
+- [ ] List forms with all filters working
+- [ ] Create form with operators and materials
+- [ ] View form with all relationships
+- [ ] Update form details
+- [ ] Delete pending form
+- [ ] Cannot delete started form
+- [ ] Assign/reassign machine
+- [ ] Assign/update operators
+- [ ] Assign/update materials with quantities
+- [ ] Change status validates transitions
+- [ ] Get forms by section
+- [ ] Get forms by machine
+- [ ] Get forms by operator
+- [ ] Get available forms
+- [ ] Get form history
+- [ ] Statistics endpoint works
+
+### Frontend (Browser):
+- [ ] Forms list loads correctly (desktop & mobile)
+- [ ] All filters work
+- [ ] Search works with debounce
+- [ ] Status badges correct colors
+- [ ] Create form wizard/form works
+- [ ] Operators multi-select works
+- [ ] Materials assignment works
+- [ ] Edit form pre-fills data
+- [ ] Show page displays all info
+- [ ] Operation Panel shows correct buttons
+- [ ] Button actions work
+- [ ] Confirmation dialogs show
+- [ ] Status changes reflect immediately
+- [ ] History timeline displays correctly
+- [ ] Navigation works (sidebar, back buttons)
+- [ ] No console errors
+- [ ] Responsive on all screen sizes
 
 ---
 
-## 🧪 Test Credentials
+## BUILD ORDER:
 
-```
-admin / password - Super Admin (all permissions)
-supervisor1 / password - Supervisor
-operator1 / password - Operator
-```
+1. **Backend first** (7 hours):
+   - Create FormController (all 15 methods)
+   - Create FormRequest
+   - Create FormResource
+   - Add routes to api.php
+   - Test all endpoints with Postman
+
+2. **Frontend Index** (2 hours):
+   - Create Forms/Index.vue
+   - Test filters and search
+   - Test pagination/infinite scroll
+
+3. **Frontend Create** (3 hours):
+   - Create Forms/Create.vue
+   - Implement wizard OR single form
+   - Test creation workflow
+
+4. **Frontend Show** (4 hours):
+   - Create Forms/Show.vue
+   - Build Operation Panel
+   - Implement button actions
+   - Test state machine
+
+5. **Frontend Edit** (2 hours):
+   - Create Forms/Edit.vue
+   - Test update workflow
+
+6. **Navigation** (0.5 hour):
+   - Update Sidebar
+   - Update Router
+
+7. **Testing** (2 hours):
+   - Complete testing checklist
+   - Fix any bugs
+   - Verify responsive design
 
 ---
 
-## 📞 Quick Commands
+Build complete, production-ready code following all established patterns from Order Management.
 
-```bash
-cd /Users/thamjeedlal/Herd/pheonixFullstack
-php artisan serve
-npm run dev
-```
+This is the most important module - it connects everything together and is what operators will use daily for production!
 
----
-
-**Copy the prompt above and start building Order Management!** 🚀
-
----
-
-*Next Chat Prompt v2.0*  
-*Updated: October 19, 2025*  
-*For: Phoenix Manufacturing System - Order Management Module*
+Good luck! 🚀
