@@ -42,7 +42,7 @@ class DepartmentController extends Controller
         $departments = $query->orderBy('created_at', 'desc')
             ->paginate($perPage);
 
-        return $this->success(
+        return $this->successResponse(
             DepartmentResource::collection($departments)->response()->getData(true),
             'Departments retrieved successfully'
         );
@@ -65,14 +65,14 @@ class DepartmentController extends Controller
 
             DB::commit();
 
-            return $this->success(
+            return $this->successResponse(
                 new DepartmentResource($department),
                 'Department created successfully',
                 201
             );
         } catch (\Exception $e) {
             DB::rollBack();
-            return $this->error('Failed to create department: ' . $e->getMessage(), 500);
+            return $this->errorResponse('Failed to create department: ' . $e->getMessage(), 500);
         }
     }
 
@@ -86,10 +86,10 @@ class DepartmentController extends Controller
             ->find($id);
 
         if (!$department) {
-            return $this->error('Department not found', 404);
+            return $this->errorResponse('Department not found', 404);
         }
 
-        return $this->success(
+        return $this->successResponse(
             new DepartmentResource($department),
             'Department retrieved successfully'
         );
@@ -103,7 +103,7 @@ class DepartmentController extends Controller
         $department = Department::find($id);
 
         if (!$department) {
-            return $this->error('Department not found', 404);
+            return $this->errorResponse('Department not found', 404);
         }
 
         try {
@@ -118,13 +118,13 @@ class DepartmentController extends Controller
 
             DB::commit();
 
-            return $this->success(
+            return $this->successResponse(
                 new DepartmentResource($department),
                 'Department updated successfully'
             );
         } catch (\Exception $e) {
             DB::rollBack();
-            return $this->error('Failed to update department: ' . $e->getMessage(), 500);
+            return $this->errorResponse('Failed to update department: ' . $e->getMessage(), 500);
         }
     }
 
@@ -136,12 +136,12 @@ class DepartmentController extends Controller
         $department = Department::withCount('materials')->find($id);
 
         if (!$department) {
-            return $this->error('Department not found', 404);
+            return $this->errorResponse('Department not found', 404);
         }
 
         // Check if department has associated materials
         if ($department->materials_count > 0) {
-            return $this->error(
+            return $this->errorResponse(
                 'Cannot delete department. It has ' . $department->materials_count . ' associated materials.',
                 400
             );
@@ -152,10 +152,10 @@ class DepartmentController extends Controller
             $department->delete();
             DB::commit();
 
-            return $this->success(null, 'Department deleted successfully');
+            return $this->successResponse(null, 'Department deleted successfully');
         } catch (\Exception $e) {
             DB::rollBack();
-            return $this->error('Failed to delete department: ' . $e->getMessage(), 500);
+            return $this->errorResponse('Failed to delete department: ' . $e->getMessage(), 500);
         }
     }
 
@@ -171,7 +171,7 @@ class DepartmentController extends Controller
             'with_materials' => Department::has('materials')->count(),
         ];
 
-        return $this->success($stats, 'Department statistics retrieved successfully');
+        return $this->successResponse($stats, 'Department statistics retrieved successfully');
     }
 
     /**
@@ -184,6 +184,6 @@ class DepartmentController extends Controller
             ->orderBy('name')
             ->get();
 
-        return $this->success($departments, 'Departments for dropdown retrieved successfully');
+        return $this->successResponse($departments, 'Departments for dropdown retrieved successfully');
     }
 }

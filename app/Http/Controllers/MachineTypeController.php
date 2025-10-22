@@ -24,8 +24,7 @@ class MachineTypeController extends Controller
         $machineType = $request->get('machine_type');
         $status = $request->get('status');
 
-        $query = MachineType::with(['createdBy:id,name'])
-            ->withCount('machines');
+        $query = MachineType::withCount('machines');
 
         // Search
         if ($search) {
@@ -49,7 +48,7 @@ class MachineTypeController extends Controller
         $machineTypes = $query->orderBy('created_at', 'desc')
             ->paginate($perPage);
 
-        return $this->success(
+        return $this->successResponse(
             MachineTypeResource::collection($machineTypes)->response()->getData(true),
             'Machine types retrieved successfully'
         );
@@ -74,14 +73,14 @@ class MachineTypeController extends Controller
 
             DB::commit();
 
-            return $this->success(
+            return $this->successResponse(
                 new MachineTypeResource($machineType->load('createdBy')),
                 'Machine type created successfully',
                 201
             );
         } catch (\Exception $e) {
             DB::rollBack();
-            return $this->error('Failed to create machine type: ' . $e->getMessage(), 500);
+            return $this->errorResponse('Failed to create machine type: ' . $e->getMessage(), 500);
         }
     }
 
@@ -95,10 +94,10 @@ class MachineTypeController extends Controller
             ->find($id);
 
         if (!$machineType) {
-            return $this->error('Machine type not found', 404);
+            return $this->errorResponse('Machine type not found', 404);
         }
 
-        return $this->success(
+        return $this->successResponse(
             new MachineTypeResource($machineType),
             'Machine type retrieved successfully'
         );
@@ -112,7 +111,7 @@ class MachineTypeController extends Controller
         $machineType = MachineType::find($id);
 
         if (!$machineType) {
-            return $this->error('Machine type not found', 404);
+            return $this->errorResponse('Machine type not found', 404);
         }
 
         try {
@@ -128,13 +127,13 @@ class MachineTypeController extends Controller
 
             DB::commit();
 
-            return $this->success(
+            return $this->successResponse(
                 new MachineTypeResource($machineType->load('createdBy')),
                 'Machine type updated successfully'
             );
         } catch (\Exception $e) {
             DB::rollBack();
-            return $this->error('Failed to update machine type: ' . $e->getMessage(), 500);
+            return $this->errorResponse('Failed to update machine type: ' . $e->getMessage(), 500);
         }
     }
 
@@ -146,12 +145,12 @@ class MachineTypeController extends Controller
         $machineType = MachineType::withCount('machines')->find($id);
 
         if (!$machineType) {
-            return $this->error('Machine type not found', 404);
+            return $this->errorResponse('Machine type not found', 404);
         }
 
         // Check if machine type has associated machines
         if ($machineType->machines_count > 0) {
-            return $this->error(
+            return $this->errorResponse(
                 'Cannot delete machine type. It has ' . $machineType->machines_count . ' associated machines.',
                 400
             );
@@ -162,10 +161,10 @@ class MachineTypeController extends Controller
             $machineType->delete();
             DB::commit();
 
-            return $this->success(null, 'Machine type deleted successfully');
+            return $this->successResponse(null, 'Machine type deleted successfully');
         } catch (\Exception $e) {
             DB::rollBack();
-            return $this->error('Failed to delete machine type: ' . $e->getMessage(), 500);
+            return $this->errorResponse('Failed to delete machine type: ' . $e->getMessage(), 500);
         }
     }
 
@@ -184,7 +183,7 @@ class MachineTypeController extends Controller
                 ->pluck('count', 'machine_type'),
         ];
 
-        return $this->success($stats, 'Machine type statistics retrieved successfully');
+        return $this->successResponse($stats, 'Machine type statistics retrieved successfully');
     }
 
     /**
@@ -197,6 +196,6 @@ class MachineTypeController extends Controller
             ->orderBy('name')
             ->get();
 
-        return $this->success($machineTypes, 'Machine types for dropdown retrieved successfully');
+        return $this->successResponse($machineTypes, 'Machine types for dropdown retrieved successfully');
     }
 }

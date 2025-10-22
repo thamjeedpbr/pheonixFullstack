@@ -72,7 +72,7 @@ class SectionController extends Controller
             );
         } catch (\Exception $e) {
             DB::rollBack();
-            return $this->error('Failed to create section: ' . $e->getMessage(), 500);
+            return $this->errorResponse('Failed to create section: ' . $e->getMessage(), 500);
         }
     }
 
@@ -84,7 +84,7 @@ class SectionController extends Controller
         $section = Section::find($id);
 
         if (!$section) {
-            return $this->error('Section not found', 404);
+            return $this->errorResponse('Section not found', 404);
         }
 
         return $this->successResponse(
@@ -101,7 +101,7 @@ class SectionController extends Controller
         $section = Section::find($id);
 
         if (!$section) {
-            return $this->error('Section not found', 404);
+            return $this->errorResponse('Section not found', 404);
         }
 
         try {
@@ -122,7 +122,7 @@ class SectionController extends Controller
             );
         } catch (\Exception $e) {
             DB::rollBack();
-            return $this->error('Failed to update section: ' . $e->getMessage(), 500);
+            return $this->errorResponse('Failed to update section: ' . $e->getMessage(), 500);
         }
     }
 
@@ -134,7 +134,7 @@ class SectionController extends Controller
         $section = Section::find($id);
 
         if (!$section) {
-            return $this->error('Section not found', 404);
+            return $this->errorResponse('Section not found', 404);
         }
 
         try {
@@ -145,7 +145,7 @@ class SectionController extends Controller
             return $this->successResponse(null, 'Section deleted successfully');
         } catch (\Exception $e) {
             DB::rollBack();
-            return $this->error('Failed to delete section: ' . $e->getMessage(), 500);
+            return $this->errorResponse('Failed to delete section: ' . $e->getMessage(), 500);
         }
     }
 

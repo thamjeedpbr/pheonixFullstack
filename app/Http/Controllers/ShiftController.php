@@ -41,7 +41,7 @@ class ShiftController extends Controller
         $shifts = $query->orderBy('start_time')
             ->paginate($perPage);
 
-        return $this->success(
+        return $this->successResponse(
             ShiftResource::collection($shifts)->response()->getData(true),
             'Shifts retrieved successfully'
         );
@@ -65,14 +65,14 @@ class ShiftController extends Controller
 
             DB::commit();
 
-            return $this->success(
+            return $this->successResponse(
                 new ShiftResource($shift),
                 'Shift created successfully',
                 201
             );
         } catch (\Exception $e) {
             DB::rollBack();
-            return $this->error('Failed to create shift: ' . $e->getMessage(), 500);
+            return $this->errorResponse('Failed to create shift: ' . $e->getMessage(), 500);
         }
     }
 
@@ -86,10 +86,10 @@ class ShiftController extends Controller
             ->find($id);
 
         if (!$shift) {
-            return $this->error('Shift not found', 404);
+            return $this->errorResponse('Shift not found', 404);
         }
 
-        return $this->success(
+        return $this->successResponse(
             new ShiftResource($shift),
             'Shift retrieved successfully'
         );
@@ -103,7 +103,7 @@ class ShiftController extends Controller
         $shift = Shift::find($id);
 
         if (!$shift) {
-            return $this->error('Shift not found', 404);
+            return $this->errorResponse('Shift not found', 404);
         }
 
         try {
@@ -119,13 +119,13 @@ class ShiftController extends Controller
 
             DB::commit();
 
-            return $this->success(
+            return $this->successResponse(
                 new ShiftResource($shift),
                 'Shift updated successfully'
             );
         } catch (\Exception $e) {
             DB::rollBack();
-            return $this->error('Failed to update shift: ' . $e->getMessage(), 500);
+            return $this->errorResponse('Failed to update shift: ' . $e->getMessage(), 500);
         }
     }
 
@@ -137,12 +137,12 @@ class ShiftController extends Controller
         $shift = Shift::withCount('users')->find($id);
 
         if (!$shift) {
-            return $this->error('Shift not found', 404);
+            return $this->errorResponse('Shift not found', 404);
         }
 
         // Check if shift has associated users
         if ($shift->users_count > 0) {
-            return $this->error(
+            return $this->errorResponse(
                 'Cannot delete shift. It has ' . $shift->users_count . ' associated users.',
                 400
             );
@@ -153,10 +153,10 @@ class ShiftController extends Controller
             $shift->delete();
             DB::commit();
 
-            return $this->success(null, 'Shift deleted successfully');
+            return $this->successResponse(null, 'Shift deleted successfully');
         } catch (\Exception $e) {
             DB::rollBack();
-            return $this->error('Failed to delete shift: ' . $e->getMessage(), 500);
+            return $this->errorResponse('Failed to delete shift: ' . $e->getMessage(), 500);
         }
     }
 
@@ -172,7 +172,7 @@ class ShiftController extends Controller
             'with_users' => Shift::has('users')->count(),
         ];
 
-        return $this->success($stats, 'Shift statistics retrieved successfully');
+        return $this->successResponse($stats, 'Shift statistics retrieved successfully');
     }
 
     /**
@@ -185,6 +185,6 @@ class ShiftController extends Controller
             ->orderBy('start_time')
             ->get();
 
-        return $this->success($shifts, 'Shifts for dropdown retrieved successfully');
+        return $this->successResponse($shifts, 'Shifts for dropdown retrieved successfully');
     }
 }

@@ -43,7 +43,7 @@ class StatusController extends Controller
         $statuses = $query->orderBy('created_at', 'desc')
             ->paginate($perPage);
 
-        return $this->success(
+        return $this->successResponse(
             StatusResource::collection($statuses)->response()->getData(true),
             'Statuses retrieved successfully'
         );
@@ -67,14 +67,14 @@ class StatusController extends Controller
 
             DB::commit();
 
-            return $this->success(
+            return $this->successResponse(
                 new StatusResource($status),
                 'Status created successfully',
                 201
             );
         } catch (\Exception $e) {
             DB::rollBack();
-            return $this->error('Failed to create status: ' . $e->getMessage(), 500);
+            return $this->errorResponse('Failed to create status: ' . $e->getMessage(), 500);
         }
     }
 
@@ -88,10 +88,10 @@ class StatusController extends Controller
             ->find($id);
 
         if (!$status) {
-            return $this->error('Status not found', 404);
+            return $this->errorResponse('Status not found', 404);
         }
 
-        return $this->success(
+        return $this->successResponse(
             new StatusResource($status),
             'Status retrieved successfully'
         );
@@ -105,7 +105,7 @@ class StatusController extends Controller
         $status = Status::find($id);
 
         if (!$status) {
-            return $this->error('Status not found', 404);
+            return $this->errorResponse('Status not found', 404);
         }
 
         try {
@@ -121,13 +121,13 @@ class StatusController extends Controller
 
             DB::commit();
 
-            return $this->success(
+            return $this->successResponse(
                 new StatusResource($status),
                 'Status updated successfully'
             );
         } catch (\Exception $e) {
             DB::rollBack();
-            return $this->error('Failed to update status: ' . $e->getMessage(), 500);
+            return $this->errorResponse('Failed to update status: ' . $e->getMessage(), 500);
         }
     }
 
@@ -139,13 +139,13 @@ class StatusController extends Controller
         $status = Status::withCount(['subStatuses', 'forms'])->find($id);
 
         if (!$status) {
-            return $this->error('Status not found', 404);
+            return $this->errorResponse('Status not found', 404);
         }
 
         // Check if status has associated records
         $totalAssociations = $status->sub_statuses_count + $status->forms_count;
         if ($totalAssociations > 0) {
-            return $this->error(
+            return $this->errorResponse(
                 'Cannot delete status. It has associated records (Sub Statuses: ' . $status->sub_statuses_count . 
                 ', Forms: ' . $status->forms_count . ')',
                 400
@@ -157,10 +157,10 @@ class StatusController extends Controller
             $status->delete();
             DB::commit();
 
-            return $this->success(null, 'Status deleted successfully');
+            return $this->successResponse(null, 'Status deleted successfully');
         } catch (\Exception $e) {
             DB::rollBack();
-            return $this->error('Failed to delete status: ' . $e->getMessage(), 500);
+            return $this->errorResponse('Failed to delete status: ' . $e->getMessage(), 500);
         }
     }
 
@@ -177,7 +177,7 @@ class StatusController extends Controller
             'with_forms' => Status::has('forms')->count(),
         ];
 
-        return $this->success($stats, 'Status statistics retrieved successfully');
+        return $this->successResponse($stats, 'Status statistics retrieved successfully');
     }
 
     /**
@@ -190,6 +190,6 @@ class StatusController extends Controller
             ->orderBy('name')
             ->get();
 
-        return $this->success($statuses, 'Statuses for dropdown retrieved successfully');
+        return $this->successResponse($statuses, 'Statuses for dropdown retrieved successfully');
     }
 }
