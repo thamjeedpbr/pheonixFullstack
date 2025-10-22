@@ -506,17 +506,8 @@ import MaterialFormModal from '@/Components/MaterialFormModal.vue';
 
 const authStore = useAuthStore();
 
-// Helper function to check permissions
-const hasPermission = (permission) => {
-  const userPermission = authStore.user?.permission;
-  if (!userPermission) return false;
-  
-  if (Array.isArray(userPermission.permissions)) {
-    return userPermission.permissions.includes(permission);
-  }
-  
-  return userPermission[permission] ?? false;
-};
+import { usePermissions } from '@/composables/usePermissions';
+const { hasPermission } = usePermissions();
 
 const canCreate = computed(() => hasPermission('material-master.create'));
 const canUpdate = computed(() => hasPermission('material-master.update'));

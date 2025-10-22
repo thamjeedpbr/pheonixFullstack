@@ -425,20 +425,11 @@ import { useAuthStore } from '@/stores/auth';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import Modal from '@/Components/Modal.vue';
 import ProcessFormModal from '@/Components/ProcessFormModal.vue';
+import { usePermissions } from '@/composables/usePermissions';
 
 const authStore = useAuthStore();
 
-// Helper function to check permissions
-const hasPermission = (permission) => {
-  const userPermission = authStore.user?.permission;
-  if (!userPermission) return false;
-  
-  if (Array.isArray(userPermission.permissions)) {
-    return userPermission.permissions.includes(permission);
-  }
-  
-  return userPermission[permission] ?? false;
-};
+const { hasPermission } = usePermissions();
 
 const canCreate = computed(() => hasPermission('process.create'));
 const canUpdate = computed(() => hasPermission('process.update'));

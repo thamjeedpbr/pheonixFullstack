@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
@@ -79,6 +80,17 @@ class Shift extends Model
     public function loginDetails(): HasMany
     {
         return $this->hasMany(LoginDetail::class, 'shift_id');
+    }
+
+    /**
+     * Get the users assigned to this shift through login details.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
+     */
+    public function users(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'login_details', 'shift_id', 'user_id')
+            ->withTimestamps();
     }
 
     /**
