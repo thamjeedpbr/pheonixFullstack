@@ -327,4 +327,30 @@ class MachineController extends Controller
             );
         }
     }
+
+    /**
+     * Get machines for dropdown.
+     *
+     * @return JsonResponse
+     */
+    public function dropdown()
+    {
+        try {
+            $machines = Machine::where('status', true)
+                ->with(['machineType:id,name'])
+                ->select('id', 'machine_id', 'machine_name', 'machine_type_id')
+                ->orderBy('machine_name')
+                ->get();
+
+            return $this->successResponse(
+                $machines,
+                'Machines for dropdown retrieved successfully'
+            );
+        } catch (Exception $e) {
+            return $this->errorResponse(
+                'Failed to retrieve machines: ' . $e->getMessage(),
+                500
+            );
+        }
+    }
 }

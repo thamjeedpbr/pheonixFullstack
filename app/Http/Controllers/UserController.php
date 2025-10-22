@@ -301,4 +301,17 @@ class UserController extends Controller
             );
         }
     }
+     /**
+     * Get operators for dropdown.
+     */
+    public function dropdown()
+    {
+        $operators = User::where('status', true)
+->where('user_type', 'operator')
+            ->select('id', 'name')
+            ->orderBy('name')
+            ->get();
+
+        return $this->successResponse($operators, 'Operators for dropdown retrieved successfully');
+    }
 }

@@ -275,4 +275,29 @@ class MaterialController extends Controller
             );
         }
     }
+       /**
+     * Get materials for dropdown.
+     *
+     * @return JsonResponse
+     */
+    public function dropdown()
+    {
+        try {
+            $materials = Material::where('status', true)
+                ->with(['department:id,name'])
+                ->select('id', 'name', 'department_id')
+                ->orderBy('name')
+                ->get();
+
+            return $this->successResponse(
+                $materials,
+                'Materials for dropdown retrieved successfully'
+            );
+        } catch (Exception $e) {
+            return $this->errorResponse(
+                'Failed to retrieve materials: ' . $e->getMessage(),
+                500
+            );
+        }
+    }
 }

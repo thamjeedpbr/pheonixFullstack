@@ -42,6 +42,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::prefix('users')->group(function () {
         Route::get('/', [UserController::class, 'index'])->name('api.users.index');
         Route::post('/', [UserController::class, 'store'])->name('api.users.store');
+        Route::get('/dropdown', [UserController::class, 'dropdown'])->name('api.users.dropdown');
         Route::get('/{id}', [UserController::class, 'show'])->name('api.users.show');
         Route::put('/{id}', [UserController::class, 'update'])->name('api.users.update');
         Route::delete('/{id}', [UserController::class, 'destroy'])->name('api.users.destroy');
@@ -55,6 +56,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::get('/', [MachineController::class, 'index'])->name('api.machines.index');
         Route::post('/', [MachineController::class, 'store'])->name('api.machines.store');
         Route::get('/stats', [MachineController::class, 'stats'])->name('api.machines.stats');
+        Route::get('/dropdown', [MachineController::class, 'dropdown'])->name('api.machines.dropdown');
         Route::get('/types', [MachineController::class, 'getMachineTypes'])->name('api.machines.types');
         Route::get('/processes', [MachineController::class, 'getProcesses'])->name('api.machines.processes');
         Route::get('/{id}', [MachineController::class, 'show'])->name('api.machines.show');
@@ -67,6 +69,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::get('/', [MaterialController::class, 'index'])->name('api.materials.index');
         Route::post('/', [MaterialController::class, 'store'])->name('api.materials.store');
         Route::get('/stats', [MaterialController::class, 'stats'])->name('api.materials.stats');
+        Route::get('/dropdown', [MaterialController::class, 'dropdown'])->name('api.materials.dropdown');
         Route::get('/departments', [MaterialController::class, 'getDepartments'])->name('api.materials.departments');
         Route::get('/{id}', [MaterialController::class, 'show'])->name('api.materials.show');
         Route::put('/{id}', [MaterialController::class, 'update'])->name('api.materials.update');

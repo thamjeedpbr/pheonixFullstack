@@ -42,7 +42,7 @@ class SectionController extends Controller
         $sections = $query->orderBy('created_at', 'desc')
             ->paginate($perPage);
 
-        return $this->success(
+        return $this->successResponse(
             SectionResource::collection($sections)->response()->getData(true),
             'Sections retrieved successfully'
         );
@@ -65,7 +65,7 @@ class SectionController extends Controller
 
             DB::commit();
 
-            return $this->success(
+            return $this->successResponse(
                 new SectionResource($section),
                 'Section created successfully',
                 201
@@ -87,7 +87,7 @@ class SectionController extends Controller
             return $this->error('Section not found', 404);
         }
 
-        return $this->success(
+        return $this->successResponse(
             new SectionResource($section),
             'Section retrieved successfully'
         );
@@ -116,7 +116,7 @@ class SectionController extends Controller
 
             DB::commit();
 
-            return $this->success(
+            return $this->successResponse(
                 new SectionResource($section),
                 'Section updated successfully'
             );
@@ -142,7 +142,7 @@ class SectionController extends Controller
             $section->delete();
             DB::commit();
 
-            return $this->success(null, 'Section deleted successfully');
+            return $this->successResponse(null, 'Section deleted successfully');
         } catch (\Exception $e) {
             DB::rollBack();
             return $this->error('Failed to delete section: ' . $e->getMessage(), 500);
@@ -160,19 +160,20 @@ class SectionController extends Controller
             'inactive' => Section::where('status', false)->count(),
         ];
 
-        return $this->success($stats, 'Section statistics retrieved successfully');
+        return $this->successResponse($stats, 'Section statistics retrieved successfully');
     }
 
     /**
      * Get sections for dropdown.
      */
-    public function dropdown(): JsonResponse
+    public function dropdown()
     {
         $sections = Section::where('status', true)
-            ->select('id', 'section_id', 'name')
-            ->orderBy('name')
+            ->with(['order:id,job_card_no,client_name'])
+            ->select('id', 'section_id', 'order_id')
+            ->orderBy('section_id')
             ->get();
 
-        return $this->success($sections, 'Sections for dropdown retrieved successfully');
+        return $this->successResponse($sections, 'Sections for dropdown retrieved successfully');
     }
 }
