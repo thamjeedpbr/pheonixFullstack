@@ -438,9 +438,9 @@ const authStore = useAuthStore();
 
 const { hasPermission } = usePermissions();
 
-const canCreate = computed(() => hasPermission('status_menu.create'));
-const canUpdate = computed(() => hasPermission('status_menu.update'));
-const canDelete = computed(() => hasPermission('status_menu.delete'));
+const canCreate = computed(() => hasPermission('status-menu.create'));
+const canUpdate = computed(() => hasPermission('status-menu.update'));
+const canDelete = computed(() => hasPermission('status-menu.delete'));
 
 const loading = ref(false);
 const loadingMore = ref(false);

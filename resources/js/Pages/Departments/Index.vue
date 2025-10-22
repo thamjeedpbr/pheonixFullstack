@@ -365,19 +365,11 @@ import { useAuthStore } from '@/stores/auth';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import Modal from '@/Components/Modal.vue';
 import DepartmentFormModal from '@/Components/DepartmentFormModal.vue';
+import { usePermissions } from '@/composables/usePermissions';
 
 const authStore = useAuthStore();
+const { hasPermission } = usePermissions();
 
-const hasPermission = (permission) => {
-  const userPermission = authStore.user?.permission;
-  if (!userPermission) return false;
-  
-  if (Array.isArray(userPermission.permissions)) {
-    return userPermission.permissions.includes(permission);
-  }
-  
-  return userPermission[permission] ?? false;
-};
 
 const canCreate = computed(() => hasPermission('department.create'));
 const canUpdate = computed(() => hasPermission('department.update'));

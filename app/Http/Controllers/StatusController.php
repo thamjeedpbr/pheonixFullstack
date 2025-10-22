@@ -28,9 +28,8 @@ class StatusController extends Controller
         // Search
         if ($search) {
             $query->where(function ($q) use ($search) {
-                $q->where('status_id', 'like', "%{$search}%")
-                    ->orWhere('name', 'like', "%{$search}%")
-                    ->orWhere('description', 'like', "%{$search}%")
+                $q->where('Status_code', 'like', "%{$search}%")
+                    ->orWhere('Status_name', 'like', "%{$search}%")
                     ->orWhere('remark', 'like', "%{$search}%");
             });
         }
@@ -58,11 +57,12 @@ class StatusController extends Controller
             DB::beginTransaction();
 
             $status = Status::create([
-                'status_id' => $request->status_id,
-                'name' => $request->name,
-                'remark' => $request->remark,
-                'description' => $request->description,
+                'Status_code' => $request->status_id,
+                'Status_name' => $request->name,
+                'remark' => $request->description ?? $request->remark,
                 'status' => $request->status ?? true,
+                'img' => $request->img,
+                'status_type' => $request->status_type ?? 'other',
             ]);
 
             DB::commit();
@@ -112,11 +112,12 @@ class StatusController extends Controller
             DB::beginTransaction();
 
             $status->update([
-                'status_id' => $request->status_id,
-                'name' => $request->name,
-                'remark' => $request->remark,
-                'description' => $request->description,
+                'Status_code' => $request->status_id,
+                'Status_name' => $request->name,
+                'remark' => $request->description ?? $request->remark,
                 'status' => $request->status ?? $status->status,
+                'img' => $request->img ?? $status->img,
+                'status_type' => $request->status_type ?? $status->status_type,
             ]);
 
             DB::commit();
@@ -186,8 +187,8 @@ class StatusController extends Controller
     public function dropdown(): JsonResponse
     {
         $statuses = Status::where('status', true)
-            ->select('id', 'status_id', 'name', 'description')
-            ->orderBy('name')
+            ->select('id', 'Status_code as status_id', 'Status_name as name', 'remark as description')
+            ->orderBy('Status_name')
             ->get();
 
         return $this->successResponse($statuses, 'Statuses for dropdown retrieved successfully');

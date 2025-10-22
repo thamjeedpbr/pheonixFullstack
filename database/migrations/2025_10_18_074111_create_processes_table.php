@@ -11,12 +11,13 @@ return new class extends Migration
         Schema::create('processes', function (Blueprint $table) {
             $table->id();
             $table->string('name')->unique()->comment('Process name');
-            $table->string('msi_id')->unique()->comment('MSI system ID');
+            $table->string('msi_id')->nullable()->comment('MSI system ID');
             $table->boolean('status')->default(true);
             $table->foreignId('created_by_id')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
             
             $table->index('status');
+            $table->index('msi_id');
         });
     }
 
