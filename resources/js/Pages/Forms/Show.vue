@@ -1,432 +1,367 @@
 <template>
   <AuthenticatedLayout>
-    <div class="max-w-7xl mx-auto">
-      <!-- Loading -->
-      <div v-if="loading" class="flex items-center justify-center py-12">
-        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <!-- Header with Breadcrumb -->
+      <div class="mb-6">
+        <nav class="flex mb-4" aria-label="Breadcrumb">
+          <ol class="inline-flex items-center space-x-1 md:space-x-3">
+            <li class="inline-flex items-center">
+              <button
+                @click="router.push('/orders')"
+                class="inline-flex items-center text-sm font-medium text-gray-700 hover:text-blue-600"
+              >
+                <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"></path>
+                </svg>
+                Orders
+              </button>
+            </li>
+            <li v-if="form.section?.order">
+              <div class="flex items-center">
+                <svg class="w-6 h-6 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
+                </svg>
+                <button
+                  @click="router.push(`/orders/${form.section.order.id}`)"
+                  class="ml-1 text-sm font-medium text-gray-700 hover:text-blue-600 md:ml-2"
+                >
+                  {{ form.section.order.job_card_no }}
+                </button>
+              </div>
+            </li>
+            <li v-if="form.section">
+              <div class="flex items-center">
+                <svg class="w-6 h-6 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
+                </svg>
+                <button
+                  @click="router.push(`/sections/${form.section.id}`)"
+                  class="ml-1 text-sm font-medium text-gray-700 hover:text-blue-600 md:ml-2"
+                >
+                  Section {{ form.section.section_id }}
+                </button>
+              </div>
+            </li>
+            <li aria-current="page">
+              <div class="flex items-center">
+                <svg class="w-6 h-6 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
+                </svg>
+                <span class="ml-1 text-sm font-medium text-gray-500 md:ml-2">{{ form.form_name }}</span>
+              </div>
+            </li>
+          </ol>
+        </nav>
+
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">{{ form.form_name }}</h1>
+            <p class="mt-1 text-sm text-gray-600">Form details and production tracking</p>
+          </div>
+          <div class="flex gap-2">
+            <button
+              @click="editForm"
+              class="inline-flex items-center rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50"
+            >
+              <svg class="mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+              </svg>
+              Edit Form
+            </button>
+            <button
+              @click="confirmDelete"
+              class="inline-flex items-center rounded-lg border border-red-300 bg-red-50 px-4 py-2 text-sm font-medium text-red-700 shadow-sm hover:bg-red-100"
+            >
+              <svg class="mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
+              Delete
+            </button>
+          </div>
+        </div>
       </div>
 
-      <div v-else-if="form">
-        <!-- Header -->
-        <div class="mb-6">
-          <div class="flex items-center gap-3 mb-2">
-            <router-link to="/forms" class="text-gray-600 hover:text-gray-900">
-              <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-              </svg>
-            </router-link>
-            <div class="flex-1">
-              <h1 class="text-2xl md:text-3xl font-bold text-gray-900">{{ form.form_no }}</h1>
-              <p class="text-sm text-gray-600 mt-1">{{ form.form_name }}</p>
+      <!-- Loading State -->
+      <div v-if="loading" class="flex justify-center py-12">
+        <svg class="h-8 w-8 animate-spin text-blue-600" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+      </div>
+
+      <!-- Content -->
+      <div v-else class="space-y-6">
+        <!-- Status and Info Card -->
+        <div class="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl shadow-md p-6 border border-blue-100">
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <div>
+              <label class="block text-sm font-medium text-blue-900 mb-1">Status</label>
+              <span class="inline-flex items-center rounded-full px-4 py-1.5 text-sm font-semibold" :class="getStatusClass(form.form_status)">
+                {{ formatStatus(form.form_status) }}
+              </span>
             </div>
-            <span class="px-4 py-2 text-sm font-medium rounded-full" :class="getStatusClass(form.status)">
-              {{ form.status_label }}
-            </span>
+            <div>
+              <label class="block text-sm font-medium text-blue-900 mb-1">Schedule Date</label>
+              <p class="text-base font-semibold text-gray-900">{{ formatDate(form.schedule_date) }}</p>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-blue-900 mb-1">Expected Quantity</label>
+              <p class="text-2xl font-bold text-blue-600">{{ form.excepted_qty || 'N/A' }}</p>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-blue-900 mb-1">Created</label>
+              <p class="text-sm text-gray-700">{{ formatDateTime(form.created_at) }}</p>
+            </div>
           </div>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <!-- Main Content -->
-          <div class="lg:col-span-2 space-y-6">
-            <!-- Order & Section Card -->
-            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-              <h2 class="text-lg font-semibold text-gray-900 mb-4">Order & Section Details</h2>
-              <div class="grid grid-cols-2 gap-4">
-                <div>
-                  <p class="text-sm text-gray-500">Section</p>
-                  <p class="font-medium text-gray-900">{{ form.section?.section_no }} - {{ form.section?.section_name }}</p>
-                </div>
-                <div>
-                  <p class="text-sm text-gray-500">Job Card</p>
-                  <p class="font-medium text-gray-900">{{ form.section?.order?.job_card_no }}</p>
-                </div>
-                <div>
-                  <p class="text-sm text-gray-500">Client</p>
-                  <p class="font-medium text-gray-900">{{ form.section?.order?.client_name }}</p>
-                </div>
-                <div>
-                  <p class="text-sm text-gray-500">Schedule Date</p>
-                  <p class="font-medium text-gray-900">{{ form.schedule_date_formatted }}</p>
-                </div>
-              </div>
-            </div>
-
-            <!-- Machine Card -->
-            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-              <h2 class="text-lg font-semibold text-gray-900 mb-4">Machine Assignment</h2>
-              <div v-if="form.machine" class="flex items-center gap-4">
+        <!-- Form Details Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <!-- Machine Assignment Card -->
+          <div class="bg-white rounded-xl shadow-md border border-gray-200 p-6">
+            <h2 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+              <svg class="w-5 h-5 mr-2 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
+              </svg>
+              Machine Assignment
+            </h2>
+            
+            <div v-if="form.machines && form.machines.length > 0" class="space-y-3">
+              <div v-for="machine in form.machines" :key="machine.id" class="flex items-center gap-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
                 <div class="flex-shrink-0">
-                  <div class="w-16 h-16 bg-blue-100 rounded-lg flex items-center justify-center">
-                    <svg class="w-8 h-8 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <div class="w-14 h-14 bg-blue-100 rounded-lg flex items-center justify-center">
+                    <svg class="w-7 h-7 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
                     </svg>
                   </div>
                 </div>
                 <div>
-                  <p class="font-semibold text-gray-900">{{ form.machine.machine_id }}</p>
-                  <p class="text-sm text-gray-600">{{ form.machine.machine_name }}</p>
-                  <p class="text-xs text-gray-500">{{ form.machine.machine_type?.name }}</p>
+                  <p class="font-semibold text-gray-900">{{ machine.machine_no }}</p>
+                  <p class="text-sm text-gray-600">{{ machine.machine_name }}</p>
                 </div>
               </div>
-              <div v-else class="text-center py-4 text-gray-500">No machine assigned</div>
             </div>
-
-            <!-- Operators Card -->
-            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-              <h2 class="text-lg font-semibold text-gray-900 mb-4">Assigned Operators</h2>
-              <div v-if="form.operators && form.operators.length > 0" class="space-y-3">
-                <div v-for="operator in form.operators" :key="operator.id" class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                  <div class="flex-shrink-0">
-                    <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
-                      <span class="text-green-700 font-medium text-sm">{{ operator.name.charAt(0) }}</span>
-                    </div>
-                  </div>
-                  <div>
-                    <p class="font-medium text-gray-900">{{ operator.name }}</p>
-                    <p class="text-sm text-gray-500">{{ operator.emp_code }} - {{ operator.department }}</p>
-                  </div>
-                </div>
-              </div>
-              <div v-else class="text-center py-4 text-gray-500">No operators assigned</div>
-            </div>
-
-            <!-- Materials Card -->
-            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-              <h2 class="text-lg font-semibold text-gray-900 mb-4">Assigned Materials</h2>
-              <div v-if="form.materials && form.materials.length > 0" class="overflow-x-auto">
-                <table class="min-w-full">
-                  <thead class="bg-gray-50">
-                    <tr>
-                      <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Code</th>
-                      <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Material</th>
-                      <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Quantity</th>
-                    </tr>
-                  </thead>
-                  <tbody class="divide-y divide-gray-200">
-                    <tr v-for="material in form.materials" :key="material.id">
-                      <td class="px-4 py-3 text-sm text-gray-900">{{ material.material_code }}</td>
-                      <td class="px-4 py-3 text-sm text-gray-900">{{ material.material_name }}</td>
-                      <td class="px-4 py-3 text-sm text-right text-gray-900">{{ material.quantity_assigned }}</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-              <div v-else class="text-center py-4 text-gray-500">No materials assigned</div>
-            </div>
-
-            <!-- Action History -->
-            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-              <h2 class="text-lg font-semibold text-gray-900 mb-4">Action History</h2>
-              <div v-if="history.length > 0" class="space-y-4">
-                <div v-for="action in history" :key="action.id" class="flex gap-3">
-                  <div class="flex-shrink-0">
-                    <div class="w-2 h-2 bg-blue-600 rounded-full mt-2"></div>
-                  </div>
-                  <div class="flex-1">
-                    <p class="font-medium text-gray-900">{{ action.action_name }}</p>
-                    <p class="text-sm text-gray-600">{{ action.user.name }} ({{ action.user.emp_code }})</p>
-                    <p v-if="action.reason" class="text-sm text-gray-500 mt-1">Reason: {{ action.reason }}</p>
-                    <p class="text-xs text-gray-400 mt-1">{{ action.timestamp_formatted }}</p>
-                  </div>
-                </div>
-              </div>
-              <div v-else class="text-center py-4 text-gray-500">No actions recorded yet</div>
+            <div v-else class="text-center py-8 text-gray-500 border-2 border-dashed border-gray-300 rounded-lg">
+              <svg class="mx-auto h-12 w-12 text-gray-400 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
+              </svg>
+              <p class="text-sm">No machine assigned</p>
             </div>
           </div>
 
-          <!-- Operation Panel Sidebar -->
-          <div class="lg:col-span-1">
-            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 sticky top-20">
-              <h2 class="text-lg font-semibold text-gray-900 mb-4">Production Controls</h2>
-
-              <!-- job_pending -->
-              <div v-if="form.status === 'job_pending'" class="space-y-3">
-                <button @click="handleMakeReady" :disabled="actionLoading" class="w-full px-4 py-3 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 font-medium disabled:opacity-50">
-                  {{ actionLoading ? 'Processing...' : 'Make Ready' }}
-                </button>
-              </div>
-
-              <!-- make_ready -->
-              <div v-else-if="form.status === 'make_ready'" class="space-y-3">
-                <button disabled class="w-full px-4 py-3 bg-gray-300 text-gray-500 rounded-lg font-medium cursor-not-allowed">
-                  ✓ Make Ready Complete
-                </button>
-                <button @click="handleStartProduction" :disabled="actionLoading" class="w-full px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium disabled:opacity-50">
-                  {{ actionLoading ? 'Starting...' : 'Start Production' }}
-                </button>
-              </div>
-
-              <!-- job_started -->
-              <div v-else-if="form.status === 'job_started'" class="space-y-3">
-                <button disabled class="w-full px-4 py-2 bg-gray-300 text-gray-500 rounded-lg font-medium cursor-not-allowed text-sm">
-                  ✓ Make Ready
-                </button>
-                <button disabled class="w-full px-4 py-2 bg-gray-300 text-gray-500 rounded-lg font-medium cursor-not-allowed text-sm">
-                  ✓ Production Running
-                </button>
-                <button @click="showPauseModal = true" class="w-full px-4 py-3 bg-orange-600 text-white rounded-lg hover:bg-orange-700 font-medium">
-                  Pause Production
-                </button>
-                <button @click="showStopModal = true" class="w-full px-4 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium">
-                  Stop Production
-                </button>
-                <button @click="handleComplete" :disabled="actionLoading" class="w-full px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium disabled:opacity-50">
-                  {{ actionLoading ? 'Completing...' : 'Complete Production' }}
-                </button>
-              </div>
-
-              <!-- paused -->
-              <div v-else-if="form.status === 'paused'" class="space-y-3">
-                <button disabled class="w-full px-4 py-3 bg-gray-300 text-gray-500 rounded-lg font-medium cursor-not-allowed">
-                  ⏸ Production Paused
-                </button>
-                <button @click="handleResume" :disabled="actionLoading" class="w-full px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium disabled:opacity-50">
-                  {{ actionLoading ? 'Resuming...' : 'Resume Production' }}
-                </button>
-              </div>
-
-              <!-- stopped -->
-              <div v-else-if="form.status === 'stopped'" class="space-y-3">
-                <button disabled class="w-full px-4 py-3 bg-gray-300 text-gray-500 rounded-lg font-medium cursor-not-allowed">
-                  ⏹ Production Stopped
-                </button>
-                <div class="p-3 bg-red-50 border border-red-200 rounded-lg">
-                  <p class="text-sm text-red-800">Form stopped. Create a new form to continue.</p>
+          <!-- Operators Card -->
+          <div class="bg-white rounded-xl shadow-md border border-gray-200 p-6">
+            <h2 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+              <svg class="w-5 h-5 mr-2 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+              </svg>
+              Assigned Operators
+              <span v-if="form.users && form.users.length > 0" class="ml-auto inline-flex items-center rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-800">
+                {{ form.users.length }} operator{{ form.users.length > 1 ? 's' : '' }}
+              </span>
+            </h2>
+            
+            <div v-if="form.users && form.users.length > 0" class="space-y-3 max-h-80 overflow-y-auto">
+              <div v-for="operator in form.users" :key="operator.id" class="flex items-center gap-3 p-4 bg-green-50 rounded-lg border border-green-200">
+                <div class="flex-shrink-0">
+                  <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                    <span class="text-green-700 font-semibold text-sm">{{ operator.name.charAt(0) }}</span>
+                  </div>
+                </div>
+                <div>
+                  <p class="font-semibold text-gray-900">{{ operator.name }}</p>
+                  <p class="text-sm text-gray-600">{{ operator.user_name }}</p>
                 </div>
               </div>
-
-              <!-- job_completed -->
-              <div v-else-if="form.status === 'job_completed'" class="space-y-3">
-                <button disabled class="w-full px-4 py-3 bg-gray-300 text-gray-500 rounded-lg font-medium cursor-not-allowed">
-                  ✓ Production Completed
-                </button>
-                <div class="p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                  <p class="text-sm text-blue-800">Ready for quality verification</p>
-                </div>
-              </div>
-
-              <!-- quality_verified -->
-              <div v-else-if="form.status === 'quality_verified'" class="space-y-3">
-                <button disabled class="w-full px-4 py-3 bg-gray-300 text-gray-500 rounded-lg font-medium cursor-not-allowed">
-                  ✓ Quality Verified
-                </button>
-                <div class="p-3 bg-purple-50 border border-purple-200 rounded-lg">
-                  <p class="text-sm text-purple-800">Ready for line clearance</p>
-                </div>
-              </div>
-
-              <!-- line_cleared -->
-              <div v-else-if="form.status === 'line_cleared'" class="space-y-3">
-                <button disabled class="w-full px-4 py-3 bg-gray-300 text-gray-500 rounded-lg font-medium cursor-not-allowed">
-                  ✓ Line Cleared
-                </button>
-                <div class="p-3 bg-teal-50 border border-teal-200 rounded-lg">
-                  <p class="text-sm text-teal-800">Form complete</p>
-                </div>
-              </div>
-
-              <!-- Actions -->
-              <div class="mt-6 pt-6 border-t border-gray-200 space-y-2">
-                <router-link :to="`/forms/${form.id}/edit`" class="block w-full px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 text-center font-medium">
-                  Edit Form
-                </router-link>
-                <button v-if="form.status === 'job_pending'" @click="confirmDelete" class="w-full px-4 py-2 border border-red-300 text-red-700 rounded-lg hover:bg-red-50 font-medium">
-                  Delete Form
-                </button>
-              </div>
+            </div>
+            <div v-else class="text-center py-8 text-gray-500 border-2 border-dashed border-gray-300 rounded-lg">
+              <svg class="mx-auto h-12 w-12 text-gray-400 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+              </svg>
+              <p class="text-sm">No operators assigned</p>
             </div>
           </div>
         </div>
-      </div>
 
-      <!-- Pause Modal -->
-      <div v-if="showPauseModal" class="fixed inset-0 z-50 overflow-y-auto">
-        <div class="flex min-h-screen items-center justify-center px-4">
-          <div class="fixed inset-0 bg-gray-500 bg-opacity-75" @click="showPauseModal = false"></div>
-          <div class="relative bg-white rounded-lg p-6 max-w-md w-full">
-            <h3 class="text-lg font-semibold mb-4">Pause Production</h3>
-            <textarea v-model="pauseReason" rows="4" placeholder="Enter reason..." class="w-full rounded-lg border border-gray-300 px-3 py-2"></textarea>
-            <div class="flex gap-3 mt-4">
-              <button @click="confirmPause" :disabled="!pauseReason || actionLoading" class="flex-1 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 disabled:opacity-50">
-                Confirm
-              </button>
-              <button @click="showPauseModal = false" class="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Stop Modal -->
-      <div v-if="showStopModal" class="fixed inset-0 z-50 overflow-y-auto">
-        <div class="flex min-h-screen items-center justify-center px-4">
-          <div class="fixed inset-0 bg-gray-500 bg-opacity-75" @click="showStopModal = false"></div>
-          <div class="relative bg-white rounded-lg p-6 max-w-md w-full">
-            <h3 class="text-lg font-semibold mb-4">Stop Production</h3>
-            <p class="text-sm text-red-600 mb-4">Warning: Stopping is permanent.</p>
-            <textarea v-model="stopReason" rows="4" placeholder="Enter reason..." class="w-full rounded-lg border border-gray-300 px-3 py-2"></textarea>
-            <div class="flex gap-3 mt-4">
-              <button @click="confirmStop" :disabled="!stopReason || actionLoading" class="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50">
-                Confirm
-              </button>
-              <button @click="showStopModal = false" class="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Delete Modal -->
-      <div v-if="showDeleteModal" class="fixed inset-0 z-50 overflow-y-auto">
-        <div class="flex min-h-screen items-center justify-center px-4">
-          <div class="fixed inset-0 bg-gray-500 bg-opacity-75" @click="showDeleteModal = false"></div>
-          <div class="relative bg-white rounded-lg p-6 max-w-md w-full">
-            <h3 class="text-lg font-semibold mb-4">Delete Form</h3>
-            <p class="text-sm text-gray-600 mb-4">Are you sure? This cannot be undone.</p>
-            <div class="flex gap-3">
-              <button @click="deleteForm" :disabled="deleting" class="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50">
-                {{ deleting ? 'Deleting...' : 'Delete' }}
-              </button>
-              <button @click="showDeleteModal = false" class="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
-                Cancel
-              </button>
-            </div>
-          </div>
+        <!-- Description Card -->
+        <div v-if="form.description" class="bg-white rounded-xl shadow-md border border-gray-200 p-6">
+          <h2 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+            <svg class="w-5 h-5 mr-2 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7" />
+            </svg>
+            Description
+          </h2>
+          <p class="text-gray-700 whitespace-pre-line">{{ form.description }}</p>
         </div>
       </div>
     </div>
+
+    <!-- Delete Confirmation Modal -->
+    <teleport to="body">
+      <div v-if="showDeleteModal" class="fixed inset-0 z-50 overflow-y-auto">
+        <div class="flex min-h-screen items-center justify-center px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+          <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" @click="showDeleteModal = false"></div>
+          <div class="inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
+            <div class="sm:flex sm:items-start">
+              <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
+                <svg class="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+              </div>
+              <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                <h3 class="text-lg leading-6 font-medium text-gray-900">Delete Form</h3>
+                <div class="mt-2">
+                  <p class="text-sm text-gray-500">
+                    Are you sure you want to delete form "{{ form.form_name }}"? 
+                    <span v-if="form.form_status !== 'job_pending'" class="font-medium text-red-600">
+                      This form has been started and cannot be deleted.
+                    </span>
+                    <span v-else>This action cannot be undone.</span>
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div class="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
+              <button
+                v-if="form.form_status === 'job_pending'"
+                @click="deleteForm"
+                :disabled="deleting"
+                type="button"
+                class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50"
+              >
+                {{ deleting ? 'Deleting...' : 'Delete' }}
+              </button>
+              <button
+                @click="showDeleteModal = false"
+                type="button"
+                class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:w-auto sm:text-sm"
+              >
+                {{ form.form_status !== 'job_pending' ? 'Close' : 'Cancel' }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </teleport>
   </AuthenticatedLayout>
 </template>
 
-<script>
+<script setup>
+import { ref, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
 import AuthenticatedLayout from '../../Layouts/AuthenticatedLayout.vue';
 import axios from 'axios';
 
-export default {
-  components: { AuthenticatedLayout },
-  props: ['id'],
-  data() {
-    return {
-      form: null,
-      history: [],
-      loading: false,
-      actionLoading: false,
-      deleting: false,
-      showPauseModal: false,
-      showStopModal: false,
-      showDeleteModal: false,
-      pauseReason: '',
-      stopReason: ''
-    };
-  },
-  mounted() {
-    this.fetchForm();
-    this.fetchHistory();
-  },
-  methods: {
-    async fetchForm() {
-      this.loading = true;
-      try {
-        const response = await axios.get(`/api/forms/${this.id}`);
-        if (response.data.success) {
-          this.form = response.data.data;
-        }
-      } catch (error) {
-        console.error('Error:', error);
-        alert('Failed to fetch form');
-        this.$router.push('/forms');
-      } finally {
-        this.loading = false;
-      }
-    },
-    async fetchHistory() {
-      try {
-        const response = await axios.get(`/api/forms/${this.id}/history`);
-        if (response.data.success) {
-          this.history = response.data.data;
-        }
-      } catch (error) {
-        console.error('Error fetching history:', error);
-      }
-    },
-    async changeStatus(newStatus, reason = null) {
-      this.actionLoading = true;
-      try {
-        const response = await axios.patch(`/api/forms/${this.id}/status`, {
-          status: newStatus,
-          reason: reason
-        });
-        if (response.data.success) {
-          await this.fetchForm();
-          await this.fetchHistory();
-          alert(`Status changed to ${newStatus}`);
-        }
-      } catch (error) {
-        alert(error.response?.data?.message || 'Failed to change status');
-      } finally {
-        this.actionLoading = false;
-      }
-    },
-    async handleMakeReady() {
-      if (confirm('Start make ready phase?')) {
-        await this.changeStatus('make_ready');
-      }
-    },
-    async handleStartProduction() {
-      if (confirm('Start production?')) {
-        await this.changeStatus('job_started');
-      }
-    },
-    async confirmPause() {
-      await this.changeStatus('paused', this.pauseReason);
-      this.showPauseModal = false;
-      this.pauseReason = '';
-    },
-    async confirmStop() {
-      await this.changeStatus('stopped', this.stopReason);
-      this.showStopModal = false;
-      this.stopReason = '';
-    },
-    async handleResume() {
-      if (confirm('Resume production?')) {
-        await this.changeStatus('job_started');
-      }
-    },
-    async handleComplete() {
-      if (confirm('Complete production?')) {
-        await this.changeStatus('job_completed');
-      }
-    },
-    confirmDelete() {
-      this.showDeleteModal = true;
-    },
-    async deleteForm() {
-      this.deleting = true;
-      try {
-        await axios.delete(`/api/forms/${this.id}`);
-        alert('Form deleted');
-        this.$router.push('/forms');
-      } catch (error) {
-        alert(error.response?.data?.message || 'Failed to delete');
-      } finally {
-        this.deleting = false;
-      }
-    },
-    getStatusClass(status) {
-      const classes = {
-        job_pending: 'bg-gray-100 text-gray-800',
-        make_ready: 'bg-yellow-100 text-yellow-800',
-        job_started: 'bg-green-100 text-green-800',
-        paused: 'bg-orange-100 text-orange-800',
-        stopped: 'bg-red-100 text-red-800',
-        job_completed: 'bg-blue-100 text-blue-800',
-        quality_verified: 'bg-purple-100 text-purple-800',
-        line_cleared: 'bg-teal-100 text-teal-800'
-      };
-      return classes[status] || 'bg-gray-100 text-gray-800';
+const props = defineProps({
+  id: {
+    type: String,
+    required: true
+  }
+});
+
+const router = useRouter();
+const form = ref({});
+const loading = ref(true);
+const deleting = ref(false);
+const showDeleteModal = ref(false);
+
+const getStatusClass = (status) => {
+  const classes = {
+    'job_pending': 'bg-gray-100 text-gray-800',
+    'make_ready': 'bg-yellow-100 text-yellow-800',
+    'job_started': 'bg-green-100 text-green-800',
+    'paused': 'bg-orange-100 text-orange-800',
+    'stopped': 'bg-red-100 text-red-800',
+    'job_completed': 'bg-blue-100 text-blue-800',
+    'quality_verified': 'bg-purple-100 text-purple-800',
+    'line_cleared': 'bg-teal-100 text-teal-800'
+  };
+  return classes[status] || 'bg-gray-100 text-gray-800';
+};
+
+const formatStatus = (status) => {
+  if (!status) return 'Unknown';
+  return status.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+};
+
+const formatDate = (date) => {
+  if (!date) return 'N/A';
+  return new Date(date).toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric'
+  });
+};
+
+const formatDateTime = (dateTime) => {
+  if (!dateTime) return 'N/A';
+  return new Date(dateTime).toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+};
+
+const fetchForm = async () => {
+  loading.value = true;
+  
+  try {
+    const response = await axios.get(`/api/forms/${props.id}`);
+    
+    if (response.data.success) {
+      form.value = response.data.data;
     }
+  } catch (error) {
+    console.error('Error fetching form:', error);
+    alert('Failed to load form');
+    goBack();
+  } finally {
+    loading.value = false;
   }
 };
+
+const editForm = () => {
+  router.push(`/forms/${props.id}/edit`);
+};
+
+const confirmDelete = () => {
+  showDeleteModal.value = true;
+};
+
+const deleteForm = async () => {
+  deleting.value = true;
+  
+  try {
+    const response = await axios.delete(`/api/forms/${props.id}`);
+    
+    if (response.data.success) {
+      // Go back to section page
+      if (form.value.section?.id) {
+        router.push(`/sections/${form.value.section.id}`);
+      } else {
+        router.push('/orders');
+      }
+    }
+  } catch (error) {
+    console.error('Error deleting form:', error);
+    alert(error.response?.data?.message || 'Failed to delete form');
+  } finally {
+    deleting.value = false;
+    showDeleteModal.value = false;
+  }
+};
+
+const goBack = () => {
+  if (form.value.section?.id) {
+    router.push(`/sections/${form.value.section.id}`);
+  } else {
+    router.push('/orders');
+  }
+};
+
+onMounted(() => {
+  fetchForm();
+});
 </script>

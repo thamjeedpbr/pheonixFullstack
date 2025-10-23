@@ -3,13 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Form;
-use App\Models\Section;
-use App\Models\Machine;
-use App\Models\User;
-use App\Models\Material;
-use App\Models\FormUserAssignment;
-use App\Models\FormMaterialAssignment;
-use App\Http\Requests\FormRequest;
+use App\Models\FormMachine;
+use App\Models\FormUser;
+use App\Http\Requests\ProductionFormRequest;
 use App\Http\Resources\FormResource;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
@@ -27,18 +23,15 @@ class FormController extends Controller
         try {
             $query = Form::with([
                 'section.order',
-                'machine.machineType',
-                'formUserAssignments.user',
-                'formMaterialAssignments.material'
+                'machines',
+                'users',
+                'material'
             ]);
 
-            // Search by form_name or form_no
+            // Search by form_name
             if ($request->has('search') && $request->search != '') {
                 $search = $request->search;
-                $query->where(function($q) use ($search) {
-                    $q->where('form_name', 'like', "%{$search}%")
-                      ->orWhere('form_no', 'like', "%{$search}%");
-                });
+                $query->where('form_name', 'like', "%{$search}%");
             }
 
             // Filter by section
@@ -46,20 +39,15 @@ class FormController extends Controller
                 $query->where('section_id', $request->section_id);
             }
 
-            // Filter by machine
-            if ($request->has('machine_id') && $request->machine_id != '') {
-                $query->where('machine_id', $request->machine_id);
-            }
-
             // Filter by status
             if ($request->has('status') && $request->status != '') {
-                $query->where('status', $request->status);
+                $query->where('form_status', $request->status);
             }
 
-            // Filter by operator - check form_user_assignments
+            // Filter by operator - check form_user pivot table
             if ($request->has('operator_id') && $request->operator_id != '') {
-                $query->whereHas('formUserAssignments', function($q) use ($request) {
-                    $q->where('user_id', $request->operator_id);
+                $query->whereHas('users', function($q) use ($request) {
+                    $q->where('users.id', $request->operator_id);
                 });
             }
 
@@ -98,40 +86,31 @@ class FormController extends Controller
     /**
      * Store a newly created form
      */
-    public function store(FormRequest $request)
+    public function store(ProductionFormRequest $request)
     {
         DB::beginTransaction();
         try {
             // Create form record
             $form = Form::create([
-                'form_no' => $request->form_no,
                 'form_name' => $request->form_name,
                 'section_id' => $request->section_id,
-                'machine_id' => $request->machine_id,
                 'schedule_date' => $request->schedule_date,
-                'status' => 'job_pending',
+                'excepted_qty' => $request->excepted_qty,
+                'description' => $request->description,
+                'material_id' => $request->material_id, // Single material reference
+                'form_status' => 'job_pending',
+                'status' => true,
+                'created_by_id' => auth()->id(),
             ]);
 
-            // Assign operators if provided
-            if ($request->has('operator_ids') && is_array($request->operator_ids)) {
-                foreach ($request->operator_ids as $userId) {
-                    FormUserAssignment::create([
-                        'form_id' => $form->id,
-                        'user_id' => $userId,
-                    ]);
-                }
+            // Assign machines if provided (now multiple)
+            if ($request->has('machine_ids') && is_array($request->machine_ids) && count($request->machine_ids) > 0) {
+                $form->machines()->attach($request->machine_ids);
             }
 
-            // Assign materials with quantities if provided
-            if ($request->has('material_ids') && is_array($request->material_ids)) {
-                foreach ($request->material_ids as $index => $materialId) {
-                    $quantity = $request->material_quantities[$index] ?? 0;
-                    FormMaterialAssignment::create([
-                        'form_id' => $form->id,
-                        'material_id' => $materialId,
-                        'quantity_assigned' => $quantity,
-                    ]);
-                }
+            // Assign operators if provided
+            if ($request->has('operator_ids') && is_array($request->operator_ids) && count($request->operator_ids) > 0) {
+                $form->users()->attach($request->operator_ids);
             }
 
             DB::commit();
@@ -139,9 +118,9 @@ class FormController extends Controller
             return $this->successResponse(
                 new FormResource($form->load([
                     'section.order',
-                    'machine.machineType',
-                    'formUserAssignments.user',
-                    'formMaterialAssignments.material'
+                    'machines',
+                    'users',
+                    'material'
                 ])),
                 'Form created successfully',
                 201
@@ -160,10 +139,10 @@ class FormController extends Controller
         try {
             $form = Form::with([
                 'section.order',
-                'machine.machineType',
-                'formUserAssignments.user',
-                'formMaterialAssignments.material',
-                'formButtonActions.user',
+                'machines',
+                'users',
+                'material',
+                'formButtonActions',
                 'dmiData'
             ])->findOrFail($id);
 
@@ -179,7 +158,7 @@ class FormController extends Controller
     /**
      * Update the specified form
      */
-    public function update(FormRequest $request, $id)
+    public function update(ProductionFormRequest $request, $id)
     {
         DB::beginTransaction();
         try {
@@ -187,45 +166,21 @@ class FormController extends Controller
 
             // Update form details
             $form->update([
-                'form_no' => $request->form_no,
                 'form_name' => $request->form_name,
-                'section_id' => $request->section_id,
-                'machine_id' => $request->machine_id,
                 'schedule_date' => $request->schedule_date,
+                'excepted_qty' => $request->excepted_qty,
+                'description' => $request->description,
+                'material_id' => $request->material_id, // Single material reference
             ]);
+
+            // Update machine assignments (now multiple)
+            if ($request->has('machine_ids')) {
+                $form->machines()->sync($request->machine_ids ?? []);
+            }
 
             // Update operators if provided
             if ($request->has('operator_ids')) {
-                // Delete existing assignments
-                FormUserAssignment::where('form_id', $form->id)->delete();
-                
-                // Create new assignments
-                if (is_array($request->operator_ids)) {
-                    foreach ($request->operator_ids as $userId) {
-                        FormUserAssignment::create([
-                            'form_id' => $form->id,
-                            'user_id' => $userId,
-                        ]);
-                    }
-                }
-            }
-
-            // Update materials if provided
-            if ($request->has('material_ids')) {
-                // Delete existing assignments
-                FormMaterialAssignment::where('form_id', $form->id)->delete();
-                
-                // Create new assignments
-                if (is_array($request->material_ids)) {
-                    foreach ($request->material_ids as $index => $materialId) {
-                        $quantity = $request->material_quantities[$index] ?? 0;
-                        FormMaterialAssignment::create([
-                            'form_id' => $form->id,
-                            'material_id' => $materialId,
-                            'quantity_assigned' => $quantity,
-                        ]);
-                    }
-                }
+                $form->users()->sync($request->operator_ids ?? []);
             }
 
             DB::commit();
@@ -233,9 +188,9 @@ class FormController extends Controller
             return $this->successResponse(
                 new FormResource($form->load([
                     'section.order',
-                    'machine.machineType',
-                    'formUserAssignments.user',
-                    'formMaterialAssignments.material'
+                    'machines',
+                    'users',
+                    'material'
                 ])),
                 'Form updated successfully'
             );
@@ -246,7 +201,7 @@ class FormController extends Controller
     }
 
     /**
-     * Remove the specified form - only if status is job_pending
+     * Remove the specified form from storage
      */
     public function destroy($id)
     {
@@ -254,16 +209,14 @@ class FormController extends Controller
         try {
             $form = Form::findOrFail($id);
 
-            // Can only delete forms with job_pending status
-            if ($form->status !== 'job_pending') {
-                return $this->errorResponse('Cannot delete form that has been started. Only pending forms can be deleted.', 400);
+            // Only allow deletion if form is pending
+            if ($form->form_status !== 'job_pending') {
+                return $this->errorResponse(
+                    'Cannot delete form that has been started. Only pending forms can be deleted.',
+                    400
+                );
             }
 
-            // Delete related assignments
-            FormUserAssignment::where('form_id', $form->id)->delete();
-            FormMaterialAssignment::where('form_id', $form->id)->delete();
-
-            // Delete form
             $form->delete();
 
             DB::commit();
@@ -283,30 +236,16 @@ class FormController extends Controller
         try {
             $stats = [
                 'total_forms' => Form::count(),
-                'job_pending' => Form::where('status', 'job_pending')->count(),
-                'make_ready' => Form::where('status', 'make_ready')->count(),
-                'job_started' => Form::where('status', 'job_started')->count(),
-                'paused' => Form::where('status', 'paused')->count(),
-                'stopped' => Form::where('status', 'stopped')->count(),
-                'job_completed' => Form::where('status', 'job_completed')->count(),
-                'quality_verified' => Form::where('status', 'quality_verified')->count(),
-                'line_cleared' => Form::where('status', 'line_cleared')->count(),
-                'forms_by_machine' => Form::select('machine_id', DB::raw('count(*) as total'))
-                    ->with('machine:id,machine_id,machine_name')
-                    ->groupBy('machine_id')
-                    ->orderBy('total', 'desc')
-                    ->limit(5)
-                    ->get()
-                    ->map(function($item) {
-                        return [
-                            'machine_id' => $item->machine->machine_id ?? 'N/A',
-                            'machine_name' => $item->machine->machine_name ?? 'N/A',
-                            'total' => $item->total
-                        ];
-                    }),
+                'pending_forms' => Form::where('form_status', 'job_pending')->count(),
+                'make_ready_forms' => Form::where('form_status', 'make_ready')->count(),
+                'started_forms' => Form::where('form_status', 'job_started')->count(),
+                'paused_forms' => Form::where('form_status', 'paused')->count(),
+                'completed_forms' => Form::where('form_status', 'job_completed')->count(),
+                'verified_forms' => Form::where('form_status', 'quality_verified')->count(),
+                'cleared_forms' => Form::where('form_status', 'line_cleared')->count(),
                 'scheduled_today' => Form::whereDate('schedule_date', today())->count(),
-                'overdue_forms' => Form::whereDate('schedule_date', '<', today())
-                    ->whereIn('status', ['job_pending', 'make_ready', 'job_started', 'paused'])
+                'overdue_forms' => Form::where('schedule_date', '<', today())
+                    ->whereNotIn('form_status', ['job_completed', 'quality_verified', 'line_cleared'])
                     ->count(),
             ];
 
@@ -317,153 +256,18 @@ class FormController extends Controller
     }
 
     /**
-     * Get forms for a specific section
-     */
-    public function getFormsBySection($sectionId)
-    {
-        try {
-            $forms = Form::with([
-                'section.order',
-                'machine.machineType',
-                'formUserAssignments.user',
-                'formMaterialAssignments.material'
-            ])
-            ->where('section_id', $sectionId)
-            ->orderBy('schedule_date', 'desc')
-            ->paginate(20);
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Forms retrieved successfully',
-                'data' => FormResource::collection($forms->items()),
-                'meta' => [
-                    'current_page' => $forms->currentPage(),
-                    'per_page' => $forms->perPage(),
-                    'total' => $forms->total(),
-                    'last_page' => $forms->lastPage()
-                ]
-            ]);
-        } catch (\Exception $e) {
-            return $this->errorResponse('Failed to retrieve forms', 500);
-        }
-    }
-
-    /**
-     * Get forms for a specific machine
-     */
-    public function getFormsByMachine($machineId)
-    {
-        try {
-            $forms = Form::with([
-                'section.order',
-                'machine.machineType',
-                'formUserAssignments.user',
-                'formMaterialAssignments.material'
-            ])
-            ->where('machine_id', $machineId)
-            ->orderBy('schedule_date', 'desc')
-            ->paginate(20);
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Forms retrieved successfully',
-                'data' => FormResource::collection($forms->items()),
-                'meta' => [
-                    'current_page' => $forms->currentPage(),
-                    'per_page' => $forms->perPage(),
-                    'total' => $forms->total(),
-                    'last_page' => $forms->lastPage()
-                ]
-            ]);
-        } catch (\Exception $e) {
-            return $this->errorResponse('Failed to retrieve forms', 500);
-        }
-    }
-
-    /**
-     * Get forms for a specific operator
-     */
-    public function getFormsByOperator($userId)
-    {
-        try {
-            $forms = Form::with([
-                'section.order',
-                'machine.machineType',
-                'formUserAssignments.user',
-                'formMaterialAssignments.material'
-            ])
-            ->whereHas('formUserAssignments', function($query) use ($userId) {
-                $query->where('user_id', $userId);
-            })
-            ->orderBy('schedule_date', 'desc')
-            ->paginate(20);
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Forms retrieved successfully',
-                'data' => FormResource::collection($forms->items()),
-                'meta' => [
-                    'current_page' => $forms->currentPage(),
-                    'per_page' => $forms->perPage(),
-                    'total' => $forms->total(),
-                    'last_page' => $forms->lastPage()
-                ]
-            ]);
-        } catch (\Exception $e) {
-            return $this->errorResponse('Failed to retrieve forms', 500);
-        }
-    }
-
-    /**
-     * Get available forms ready for production
-     */
-    public function getAvailableForms()
-    {
-        try {
-            $forms = Form::with([
-                'section.order',
-                'machine.machineType',
-                'formUserAssignments.user',
-                'formMaterialAssignments.material'
-            ])
-            ->where('status', 'job_pending')
-            ->whereDate('schedule_date', '<=', today())
-            ->whereNotNull('machine_id')
-            ->whereHas('formUserAssignments')
-            ->whereHas('formMaterialAssignments')
-            ->orderBy('schedule_date', 'asc')
-            ->paginate(20);
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Available forms retrieved successfully',
-                'data' => FormResource::collection($forms->items()),
-                'meta' => [
-                    'current_page' => $forms->currentPage(),
-                    'per_page' => $forms->perPage(),
-                    'total' => $forms->total(),
-                    'last_page' => $forms->lastPage()
-                ]
-            ]);
-        } catch (\Exception $e) {
-            return $this->errorResponse('Failed to retrieve forms', 500);
-        }
-    }
-
-    /**
-     * Change form status - validates state machine transitions
+     * Change form status with state machine validation
      */
     public function changeStatus(Request $request, $id)
     {
         $request->validate([
-            'status' => 'required|in:job_pending,make_ready,job_started,paused,stopped,job_completed,quality_verified,line_cleared',
-            'reason' => 'nullable|string|max:500'
+            'status' => 'required|in:job_pending,make_ready,job_started,paused,stopped,job_completed,quality_verified,line_cleared'
         ]);
 
         DB::beginTransaction();
         try {
             $form = Form::findOrFail($id);
-            $currentStatus = $form->status;
+            $currentStatus = $form->form_status;
             $newStatus = $request->status;
 
             // Validate state machine transitions
@@ -486,141 +290,22 @@ class FormController extends Controller
             }
 
             // Update status
-            $form->update(['status' => $newStatus]);
+            $form->update(['form_status' => $newStatus]);
 
             DB::commit();
 
             return $this->successResponse(
                 new FormResource($form->load([
                     'section.order',
-                    'machine.machineType',
-                    'formUserAssignments.user',
-                    'formMaterialAssignments.material'
+                    'machines',
+                    'users',
+                    'material'
                 ])),
                 'Form status updated successfully'
             );
         } catch (\Exception $e) {
             DB::rollBack();
             return $this->errorResponse('Failed to update status: ' . $e->getMessage(), 500);
-        }
-    }
-
-    /**
-     * Assign or change machine for a form
-     */
-    public function assignMachine(Request $request, $id)
-    {
-        $request->validate([
-            'machine_id' => 'required|exists:machines,id'
-        ]);
-
-        DB::beginTransaction();
-        try {
-            $form = Form::findOrFail($id);
-            $form->update(['machine_id' => $request->machine_id]);
-
-            DB::commit();
-
-            return $this->successResponse(
-                new FormResource($form->load([
-                    'section.order',
-                    'machine.machineType',
-                    'formUserAssignments.user',
-                    'formMaterialAssignments.material'
-                ])),
-                'Machine assigned successfully'
-            );
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return $this->errorResponse('Failed to assign machine: ' . $e->getMessage(), 500);
-        }
-    }
-
-    /**
-     * Assign multiple operators to a form
-     */
-    public function assignOperators(Request $request, $id)
-    {
-        $request->validate([
-            'user_ids' => 'required|array',
-            'user_ids.*' => 'exists:users,id'
-        ]);
-
-        DB::beginTransaction();
-        try {
-            $form = Form::findOrFail($id);
-
-            // Delete existing assignments
-            FormUserAssignment::where('form_id', $form->id)->delete();
-
-            // Create new assignments
-            foreach ($request->user_ids as $userId) {
-                FormUserAssignment::create([
-                    'form_id' => $form->id,
-                    'user_id' => $userId,
-                ]);
-            }
-
-            DB::commit();
-
-            return $this->successResponse(
-                new FormResource($form->load([
-                    'section.order',
-                    'machine.machineType',
-                    'formUserAssignments.user',
-                    'formMaterialAssignments.material'
-                ])),
-                'Operators assigned successfully'
-            );
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return $this->errorResponse('Failed to assign operators: ' . $e->getMessage(), 500);
-        }
-    }
-
-    /**
-     * Assign materials with quantities to a form
-     */
-    public function assignMaterials(Request $request, $id)
-    {
-        $request->validate([
-            'material_ids' => 'required|array',
-            'material_ids.*' => 'exists:materials,id',
-            'material_quantities' => 'required|array',
-            'material_quantities.*' => 'numeric|min:0'
-        ]);
-
-        DB::beginTransaction();
-        try {
-            $form = Form::findOrFail($id);
-
-            // Delete existing assignments
-            FormMaterialAssignment::where('form_id', $form->id)->delete();
-
-            // Create new assignments
-            foreach ($request->material_ids as $index => $materialId) {
-                $quantity = $request->material_quantities[$index] ?? 0;
-                FormMaterialAssignment::create([
-                    'form_id' => $form->id,
-                    'material_id' => $materialId,
-                    'quantity_assigned' => $quantity,
-                ]);
-            }
-
-            DB::commit();
-
-            return $this->successResponse(
-                new FormResource($form->load([
-                    'section.order',
-                    'machine.machineType',
-                    'formUserAssignments.user',
-                    'formMaterialAssignments.material'
-                ])),
-                'Materials assigned successfully'
-            );
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return $this->errorResponse('Failed to assign materials: ' . $e->getMessage(), 500);
         }
     }
 

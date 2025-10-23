@@ -77,12 +77,38 @@ class Form extends Model
 
     public function machines(): BelongsToMany
     {
-        return $this->belongsToMany(Machine::class, 'form_machine');
+        return $this->belongsToMany(Machine::class, 'form_machine')
+            ->using(FormMachine::class)
+            ->withPivot(['is_active', 'selected_at', 'deselected_at', 'duration_minutes'])
+            ->withTimestamps();
     }
 
     public function users(): BelongsToMany
     {
-        return $this->belongsToMany(User::class, 'form_user');
+        return $this->belongsToMany(User::class, 'form_user')
+            ->using(FormUser::class)
+            ->withPivot(['is_working', 'worked_at', 'finished_at', 'duration_minutes', 'notes'])
+            ->withTimestamps();
+    }
+
+    /**
+     * Get the currently active machine for this form
+     */
+    public function activeMachine()
+    {
+        return $this->machines()
+            ->wherePivot('is_active', true)
+            ->first();
+    }
+
+    /**
+     * Get the currently working user for this form
+     */
+    public function workingUser()
+    {
+        return $this->users()
+            ->wherePivot('is_working', true)
+            ->first();
     }
 
     public function material(): BelongsTo

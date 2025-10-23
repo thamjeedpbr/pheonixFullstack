@@ -1,6 +1,6 @@
 <template>
   <AuthenticatedLayout>
-    <div class="max-w-4xl mx-auto">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
       <!-- Header -->
       <div class="mb-6">
         <button
@@ -16,7 +16,7 @@
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">Order Details</h1>
-            <p class="mt-1 text-sm text-gray-600">View and manage order information</p>
+            <p class="mt-1 text-sm text-gray-600">Manage order sections and forms</p>
           </div>
           <div class="flex gap-2">
             <button
@@ -26,7 +26,7 @@
               <svg class="mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
               </svg>
-              Edit
+              Edit Order
             </button>
             <button
               @click="confirmDelete"
@@ -52,27 +52,27 @@
       <!-- Content -->
       <div v-else class="space-y-6">
         <!-- Order Information Card -->
-        <div class="bg-white shadow-md rounded-lg p-6">
-          <h2 class="text-lg font-semibold text-gray-900 mb-4">Order Information</h2>
+        <div class="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl shadow-md p-6 border border-blue-100">
+          <h2 class="text-lg font-semibold text-blue-900 mb-4">Order Information</h2>
           
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             <!-- Job Card Number -->
             <div>
-              <label class="block text-sm font-medium text-gray-500 mb-1">Job Card Number</label>
-              <p class="text-lg font-bold text-gray-900">{{ order.job_card_no }}</p>
+              <label class="block text-sm font-medium text-blue-900 mb-1">Job Card Number</label>
+              <p class="text-2xl font-bold text-blue-600">{{ order.job_card_no }}</p>
             </div>
 
             <!-- Status & Priority -->
-            <div class="flex gap-3">
+            <div class="flex gap-4">
               <div>
-                <label class="block text-sm font-medium text-gray-500 mb-1">Status</label>
-                <span class="inline-flex items-center rounded-full px-3 py-1 text-sm font-medium" :class="getStatusClass(order.status)">
+                <label class="block text-sm font-medium text-blue-900 mb-1">Status</label>
+                <span class="inline-flex items-center rounded-full px-3 py-1 text-sm font-semibold" :class="getStatusClass(order.status)">
                   {{ order.status_label }}
                 </span>
               </div>
               <div>
-                <label class="block text-sm font-medium text-gray-500 mb-1">Priority</label>
-                <span class="inline-flex items-center rounded-full px-3 py-1 text-sm font-medium" :class="getPriorityClass(order.priority)">
+                <label class="block text-sm font-medium text-blue-900 mb-1">Priority</label>
+                <span class="inline-flex items-center rounded-full px-3 py-1 text-sm font-semibold" :class="getPriorityClass(order.priority)">
                   {{ order.priority_label }}
                 </span>
               </div>
@@ -80,93 +80,184 @@
 
             <!-- Client Name -->
             <div>
-              <label class="block text-sm font-medium text-gray-500 mb-1">Client Name</label>
-              <p class="text-base text-gray-900">{{ order.client_name }}</p>
+              <label class="block text-sm font-medium text-blue-900 mb-1">Client Name</label>
+              <p class="text-base font-medium text-gray-900">{{ order.client_name }}</p>
             </div>
 
             <!-- Delivery Date -->
             <div>
-              <label class="block text-sm font-medium text-gray-500 mb-1">Delivery Date</label>
-              <p class="text-base text-gray-900">{{ order.delivery_date_formatted }}</p>
-              <p v-if="order.days_until_delivery !== null" class="text-sm mt-1" :class="order.days_until_delivery < 0 ? 'text-red-600 font-medium' : 'text-gray-500'">
-                {{ order.days_until_delivery < 0 ? `Overdue by ${Math.abs(order.days_until_delivery)} days` : `${order.days_until_delivery} days remaining` }}
+              <label class="block text-sm font-medium text-blue-900 mb-1">Delivery Date</label>
+              <p class="text-base font-medium text-gray-900">{{ order.delivery_date_formatted }}</p>
+              <p v-if="order.days_until_delivery !== null" class="text-sm mt-1 font-medium" :class="order.days_until_delivery < 0 ? 'text-red-600' : 'text-green-600'">
+                {{ order.days_until_delivery < 0 ? `⚠️ Overdue by ${Math.abs(order.days_until_delivery)} days` : `✓ ${order.days_until_delivery} days remaining` }}
               </p>
             </div>
 
             <!-- Title -->
             <div class="sm:col-span-2">
-              <label class="block text-sm font-medium text-gray-500 mb-1">Title</label>
-              <p class="text-base text-gray-900">{{ order.title }}</p>
+              <label class="block text-sm font-medium text-blue-900 mb-1">Title</label>
+              <p class="text-base font-medium text-gray-900">{{ order.title }}</p>
             </div>
 
             <!-- Description -->
-            <div v-if="order.description" class="sm:col-span-2">
-              <label class="block text-sm font-medium text-gray-500 mb-1">Description</label>
+            <div v-if="order.description" class="sm:col-span-2 lg:col-span-3">
+              <label class="block text-sm font-medium text-blue-900 mb-1">Description</label>
               <p class="text-base text-gray-700 whitespace-pre-line">{{ order.description }}</p>
-            </div>
-
-            <!-- Created By -->
-            <div v-if="order.created_by">
-              <label class="block text-sm font-medium text-gray-500 mb-1">Created By</label>
-              <p class="text-base text-gray-900">{{ order.created_by.name }}</p>
-            </div>
-
-            <!-- Created At -->
-            <div>
-              <label class="block text-sm font-medium text-gray-500 mb-1">Created On</label>
-              <p class="text-base text-gray-900">{{ order.created_at_formatted }}</p>
             </div>
           </div>
         </div>
 
-        <!-- Sections Card -->
-        <div class="bg-white shadow-md rounded-lg p-6">
+        <!-- Sections Cards -->
+        <div>
           <div class="flex items-center justify-between mb-4">
-            <h2 class="text-lg font-semibold text-gray-900">Sections</h2>
-            <span class="inline-flex items-center rounded-full bg-blue-100 px-3 py-1 text-sm font-medium text-blue-800">
-              {{ order.sections_count || 0 }} sections
-            </span>
+            <h2 class="text-xl font-semibold text-gray-900">Sections</h2>
+            <div class="flex items-center gap-3">
+              <span class="inline-flex items-center rounded-full bg-blue-100 px-3 py-1 text-sm font-semibold text-blue-800">
+                {{ order.sections_count || 0 }} section{{ order.sections_count !== 1 ? 's' : '' }}
+              </span>
+              <button
+                @click="showAddSectionModal = true"
+                class="inline-flex items-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700"
+              >
+                <svg class="mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                </svg>
+                Add Section
+              </button>
+            </div>
           </div>
 
-          <div v-if="order.sections && order.sections.length > 0" class="space-y-3">
+          <!-- Sections Grid -->
+          <div v-if="order.sections && order.sections.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <div
               v-for="section in order.sections"
               :key="section.id"
-              class="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+              class="bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-200 hover:border-blue-300 group"
             >
-              <div>
-                <p class="font-medium text-gray-900">{{ section.section_name }}</p>
-                <p class="text-sm text-gray-500">Section No: {{ section.section_no }}</p>
+              <!-- Card Header -->
+              <div class="bg-gradient-to-r from-indigo-50 to-blue-50 px-6 py-4 border-b border-gray-200">
+                <div class="flex items-center justify-between">
+                  <h3 class="text-xl font-bold text-indigo-900">
+                    Section {{ section.section_id }}
+                  </h3>
+                  <span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold"
+                    :class="section.status ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'">
+                    {{ section.status ? 'Active' : 'Inactive' }}
+                  </span>
+                </div>
               </div>
-              <div class="flex items-center gap-3">
-                <span class="inline-flex items-center rounded-full bg-purple-100 px-2.5 py-0.5 text-xs font-medium text-purple-800">
-                  {{ section.forms_count }} forms
-                </span>
+
+              <!-- Card Body -->
+              <div class="px-6 py-5">
+                <div class="text-center">
+                  <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-100 mb-3">
+                    <svg class="w-8 h-8 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                  </div>
+                  <p class="text-3xl font-bold text-blue-600">{{ section.forms_count || 0 }}</p>
+                  <p class="text-sm text-gray-600 mt-1">Form{{ section.forms_count !== 1 ? 's' : '' }}</p>
+                </div>
+              </div>
+
+              <!-- Card Footer with Actions -->
+              <div class="bg-gray-50 px-4 py-3 border-t border-gray-200 flex items-center justify-between gap-2">
                 <button
                   @click="viewSection(section.id)"
-                  class="text-blue-600 hover:text-blue-900 transition-colors"
-                  title="View Section"
+                  class="flex-1 inline-flex items-center justify-center rounded-lg bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-700 transition-colors"
                 >
-                  <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                  <svg class="mr-1.5 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                  </svg>
+                  View Forms
+                </button>
+                <button
+                  @click="deleteSection(section.id)"
+                  class="inline-flex items-center justify-center rounded-lg border border-red-300 bg-red-50 px-3 py-2 text-sm font-medium text-red-700 hover:bg-red-100 transition-colors"
+                  title="Delete Section"
+                >
+                  <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                   </svg>
                 </button>
               </div>
             </div>
           </div>
 
-          <div v-else class="text-center py-8">
-            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          <!-- Empty State -->
+          <div v-else class="text-center py-16 bg-white rounded-xl shadow-md border-2 border-dashed border-gray-300">
+            <svg class="mx-auto h-16 w-16 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
-            <h3 class="mt-2 text-sm font-medium text-gray-900">No sections</h3>
-            <p class="mt-1 text-sm text-gray-500">This order doesn't have any sections yet.</p>
+            <h3 class="mt-4 text-lg font-medium text-gray-900">No sections yet</h3>
+            <p class="mt-2 text-sm text-gray-500">Get started by creating sections for this order.</p>
+            <button
+              @click="showAddSectionModal = true"
+              class="mt-6 inline-flex items-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700"
+            >
+              <svg class="mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+              </svg>
+              Create First Section
+            </button>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Delete Confirmation Modal -->
+    <!-- Add Section Modal -->
+    <teleport to="body">
+      <div v-if="showAddSectionModal" class="fixed inset-0 z-50 overflow-y-auto">
+        <div class="flex min-h-screen items-center justify-center px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+          <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" @click="showAddSectionModal = false"></div>
+          <div class="inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
+            <div>
+              <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-blue-100">
+                <svg class="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                </svg>
+              </div>
+              <div class="mt-3 text-center sm:mt-5">
+                <h3 class="text-lg leading-6 font-medium text-gray-900">Add New Section</h3>
+                <div class="mt-4">
+                  <label for="section-id" class="block text-sm font-medium text-gray-700 text-left mb-2">
+                    Section ID <span class="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    id="section-id"
+                    v-model="newSection.section_id"
+                    class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                    placeholder="Enter section ID (e.g., SEC-001)"
+                  />
+                  <p v-if="sectionError" class="mt-2 text-sm text-red-600">{{ sectionError }}</p>
+                </div>
+              </div>
+            </div>
+            <div class="mt-5 sm:mt-6 sm:grid sm:grid-flow-row-dense sm:grid-cols-2 sm:gap-3">
+              <button
+                @click="createSection"
+                :disabled="creatingSection || !newSection.section_id"
+                type="button"
+                class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:col-start-2 sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {{ creatingSection ? 'Creating...' : 'Create Section' }}
+              </button>
+              <button
+                @click="showAddSectionModal = false"
+                type="button"
+                class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:col-start-1 sm:text-sm"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </teleport>
+
+    <!-- Delete Order Confirmation Modal -->
     <teleport to="body">
       <div v-if="showDeleteModal" class="fixed inset-0 z-50 overflow-y-auto">
         <div class="flex min-h-screen items-center justify-center px-4 pt-4 pb-20 text-center sm:block sm:p-0">
@@ -184,7 +275,7 @@
                   <p class="text-sm text-gray-500">
                     Are you sure you want to delete order "{{ order.job_card_no }}"? 
                     <span v-if="order.sections_count > 0" class="font-medium text-red-600">
-                      This order has {{ order.sections_count }} section(s) with forms and cannot be deleted.
+                      This order has {{ order.sections_count }} section(s) and cannot be deleted.
                     </span>
                     <span v-else>This action cannot be undone.</span>
                   </p>
@@ -233,6 +324,14 @@ const order = ref({});
 const loading = ref(true);
 const deleting = ref(false);
 const showDeleteModal = ref(false);
+const showAddSectionModal = ref(false);
+const creatingSection = ref(false);
+const sectionError = ref('');
+
+const newSection = ref({
+  section_id: '',
+  status: true
+});
 
 const getStatusClass = (status) => {
   const classes = {
@@ -269,6 +368,54 @@ const fetchOrder = async () => {
     goBack();
   } finally {
     loading.value = false;
+  }
+};
+
+const createSection = async () => {
+  if (!newSection.value.section_id) {
+    sectionError.value = 'Section ID is required';
+    return;
+  }
+
+  creatingSection.value = true;
+  sectionError.value = '';
+  
+  try {
+    const response = await axios.post('/api/sections', {
+      section_id: newSection.value.section_id,
+      order_id: props.id,
+      status: true
+    });
+    
+    if (response.data.success) {
+      showAddSectionModal.value = false;
+      newSection.value.section_id = '';
+      // Refresh order to show new section
+      await fetchOrder();
+    }
+  } catch (error) {
+    console.error('Error creating section:', error);
+    sectionError.value = error.response?.data?.message || 'Failed to create section';
+  } finally {
+    creatingSection.value = false;
+  }
+};
+
+const deleteSection = async (sectionId) => {
+  if (!confirm('Are you sure you want to delete this section? This cannot be undone if the section has forms.')) {
+    return;
+  }
+
+  try {
+    const response = await axios.delete(`/api/sections/${sectionId}`);
+    
+    if (response.data.success) {
+      // Refresh order to update sections list
+      await fetchOrder();
+    }
+  } catch (error) {
+    console.error('Error deleting section:', error);
+    alert(error.response?.data?.message || 'Failed to delete section');
   }
 };
 

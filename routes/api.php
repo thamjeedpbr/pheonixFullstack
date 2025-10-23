@@ -25,7 +25,6 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('auth')->group(function () {
     Route::post('/login', [AuthController::class, 'login'])->name('api.auth.login');
 });
-
 // Protected routes (authentication required)
 Route::middleware(['auth:sanctum'])->group(function () {
     
@@ -152,6 +151,16 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::put('/{id}', [OrderController::class, 'update'])->name('api.orders.update');
         Route::patch('/{id}/status', [OrderController::class, 'changeStatus'])->name('api.orders.changeStatus');
         Route::delete('/{id}', [OrderController::class, 'destroy'])->name('api.orders.destroy');
+    });
+
+    // Section Management Routes (sections belong to orders)
+    Route::prefix('sections')->group(function () {
+        Route::get('/', [SectionController::class, 'index'])->name('api.sections.index');
+        Route::post('/', [SectionController::class, 'store'])->name('api.sections.store');
+        Route::get('/order/{orderId}', [SectionController::class, 'getByOrder'])->name('api.sections.byOrder');
+        Route::get('/{id}', [SectionController::class, 'show'])->name('api.sections.show');
+        Route::put('/{id}', [SectionController::class, 'update'])->name('api.sections.update');
+        Route::delete('/{id}', [SectionController::class, 'destroy'])->name('api.sections.destroy');
     });
 
     // Form/Job Management Routes

@@ -120,6 +120,13 @@ const routes = [
     props: true,
   },
   {
+    path: '/sections/:id',
+    name: 'sections.show',
+    component: () => import('./Pages/Sections/Show.vue'),
+    meta: { requiresAuth: true },
+    props: true,
+  },
+  {
     path: '/forms',
     name: 'forms.index',
     component: FormsIndex,

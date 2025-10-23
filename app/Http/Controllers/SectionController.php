@@ -2,178 +2,220 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\SectionRequest;
-use App\Http\Resources\SectionResource;
 use App\Models\Section;
-use App\Traits\ApiResponseTrait;
-use Illuminate\Http\JsonResponse;
+use App\Models\Order;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class SectionController extends Controller
 {
-    use ApiResponseTrait;
-
     /**
-     * Display a listing of sections.
+     * Display sections for a specific order
      */
-    public function index(Request $request): JsonResponse
+    public function index(Request $request)
     {
-        $perPage = $request->get('per_page', 20);
-        $search = $request->get('search');
-        $status = $request->get('status');
+        $query = Section::with(['order', 'forms', 'createdBy']);
 
-        $query = Section::query();
+        // Filter by order
+        if ($request->has('order_id')) {
+            $query->where('order_id', $request->order_id);
+        }
 
         // Search
-        if ($search) {
-            $query->where(function ($q) use ($search) {
-                $q->where('section_id', 'like', "%{$search}%")
-                    ->orWhere('name', 'like', "%{$search}%")
-                    ->orWhere('remark', 'like', "%{$search}%");
-            });
+        if ($request->has('search')) {
+            $query->where('section_id', 'like', '%' . $request->search . '%');
         }
 
         // Filter by status
-        if ($status !== null && $status !== '') {
-            $query->where('status', (bool) $status);
+        if ($request->has('status')) {
+            $query->where('status', $request->status);
         }
 
-        $sections = $query->orderBy('created_at', 'desc')
-            ->paginate($perPage);
+        $perPage = $request->get('per_page', 15);
+        $sections = $query->latest()->paginate($perPage);
 
-        return $this->successResponse(
-            SectionResource::collection($sections)->response()->getData(true),
-            'Sections retrieved successfully'
-        );
+        return response()->json([
+            'success' => true,
+            'data' => $sections->items(),
+            'meta' => [
+                'current_page' => $sections->currentPage(),
+                'last_page' => $sections->lastPage(),
+                'per_page' => $sections->perPage(),
+                'total' => $sections->total(),
+            ]
+        ]);
     }
 
     /**
-     * Store a newly created section.
+     * Store a newly created section (MUST belong to an order)
      */
-    public function store(SectionRequest $request): JsonResponse
+    public function store(Request $request)
     {
+        $validated = $request->validate([
+            'section_id' => 'required|string|max:255|unique:sections,section_id',
+            'order_id' => 'required|exists:orders,id',
+            'status' => 'boolean',
+        ]);
+
         try {
             DB::beginTransaction();
+
+            // Verify order exists
+            $order = Order::findOrFail($validated['order_id']);
 
             $section = Section::create([
-                'section_id' => $request->section_id,
-                'name' => $request->name,
-                'remark' => $request->remark,
-                'status' => $request->status ?? true,
+                'section_id' => $validated['section_id'],
+                'order_id' => $validated['order_id'],
+                'status' => $validated['status'] ?? true,
+                'created_by_id' => auth()->id(),
             ]);
+
+            $section->load(['order', 'forms', 'createdBy']);
 
             DB::commit();
 
-            return $this->successResponse(
-                new SectionResource($section),
-                'Section created successfully',
-                201
-            );
+            return response()->json([
+                'success' => true,
+                'message' => 'Section created successfully',
+                'data' => $section
+            ], 201);
+
         } catch (\Exception $e) {
             DB::rollBack();
-            return $this->errorResponse('Failed to create section: ' . $e->getMessage(), 500);
+            Log::error('Section creation failed: ' . $e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to create section',
+                'error' => $e->getMessage()
+            ], 500);
         }
     }
 
     /**
-     * Display the specified section.
+     * Display the specified section with all its forms
      */
-    public function show(int $id): JsonResponse
+    public function show($id)
     {
-        $section = Section::find($id);
+        try {
+            $section = Section::with([
+                'order',
+                'forms.machines',
+                'forms.users',
+                'forms.material',
+                'forms.section',
+                'createdBy'
+            ])->findOrFail($id);
 
-        if (!$section) {
-            return $this->errorResponse('Section not found', 404);
+            // Add forms count
+            $section->forms_count = $section->forms->count();
+
+            return response()->json([
+                'success' => true,
+                'data' => $section
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Section not found'
+            ], 404);
         }
-
-        return $this->successResponse(
-            new SectionResource($section),
-            'Section retrieved successfully'
-        );
     }
 
     /**
-     * Update the specified section.
+     * Update the specified section
      */
-    public function update(SectionRequest $request, int $id): JsonResponse
+    public function update(Request $request, $id)
     {
-        $section = Section::find($id);
-
-        if (!$section) {
-            return $this->errorResponse('Section not found', 404);
-        }
+        $validated = $request->validate([
+            'section_id' => 'required|string|max:255|unique:sections,section_id,' . $id,
+            'status' => 'boolean',
+        ]);
 
         try {
-            DB::beginTransaction();
+            $section = Section::findOrFail($id);
 
             $section->update([
-                'section_id' => $request->section_id,
-                'name' => $request->name,
-                'remark' => $request->remark,
-                'status' => $request->status ?? $section->status,
+                'section_id' => $validated['section_id'],
+                'status' => $validated['status'] ?? $section->status,
             ]);
 
-            DB::commit();
+            $section->load(['order', 'forms', 'createdBy']);
 
-            return $this->successResponse(
-                new SectionResource($section),
-                'Section updated successfully'
-            );
+            return response()->json([
+                'success' => true,
+                'message' => 'Section updated successfully',
+                'data' => $section
+            ]);
+
         } catch (\Exception $e) {
-            DB::rollBack();
-            return $this->errorResponse('Failed to update section: ' . $e->getMessage(), 500);
+            Log::error('Section update failed: ' . $e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to update section',
+                'error' => $e->getMessage()
+            ], 500);
         }
     }
 
     /**
-     * Remove the specified section.
+     * Remove the specified section (only if no forms exist)
      */
-    public function destroy(int $id): JsonResponse
+    public function destroy($id)
     {
-        $section = Section::find($id);
-
-        if (!$section) {
-            return $this->errorResponse('Section not found', 404);
-        }
-
         try {
-            DB::beginTransaction();
-            $section->delete();
-            DB::commit();
+            $section = Section::findOrFail($id);
 
-            return $this->successResponse(null, 'Section deleted successfully');
+            // Check if section has forms
+            if ($section->forms()->count() > 0) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Cannot delete section with existing forms. Please delete all forms first.'
+                ], 400);
+            }
+
+            $section->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Section deleted successfully'
+            ]);
+
         } catch (\Exception $e) {
-            DB::rollBack();
-            return $this->errorResponse('Failed to delete section: ' . $e->getMessage(), 500);
+            Log::error('Section deletion failed: ' . $e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to delete section',
+                'error' => $e->getMessage()
+            ], 500);
         }
     }
 
     /**
-     * Get section statistics.
+     * Get all sections for a specific order
      */
-    public function stats(): JsonResponse
+    public function getByOrder($orderId)
     {
-        $stats = [
-            'total' => Section::count(),
-            'active' => Section::where('status', true)->count(),
-            'inactive' => Section::where('status', false)->count(),
-        ];
+        try {
+            $sections = Section::where('order_id', $orderId)
+                ->with(['forms'])
+                ->withCount('forms')
+                ->get();
 
-        return $this->successResponse($stats, 'Section statistics retrieved successfully');
-    }
+            return response()->json([
+                'success' => true,
+                'data' => $sections
+            ]);
 
-    /**
-     * Get sections for dropdown.
-     */
-    public function dropdown()
-    {
-        $sections = Section::where('status', true)
-            ->with(['order:id,job_card_no,client_name'])
-            ->select('id', 'section_id', 'order_id')
-            ->orderBy('section_id')
-            ->get();
-
-        return $this->successResponse($sections, 'Sections for dropdown retrieved successfully');
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to fetch sections'
+            ], 500);
+        }
     }
 }
