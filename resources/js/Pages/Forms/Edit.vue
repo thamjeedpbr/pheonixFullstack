@@ -230,7 +230,7 @@
             >
               <option value="">No Material Assigned</option>
               <option v-for="material in materials" :key="material.id" :value="material.id">
-                {{ material.material_code }} - {{ material.material_name }}
+                {{ material.material_id || material.id }} - {{ material.name }}
               </option>
             </select>
             <p class="mt-1.5 text-xs text-gray-500">You can assign a material later if needed</p>

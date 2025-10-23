@@ -201,8 +201,8 @@
                   </div>
                 </div>
                 <div>
-                  <p class="font-semibold text-gray-900">{{ form.material.material_name }}</p>
-                  <p class="text-sm text-gray-600">Code: {{ form.material.material_code }}</p>
+                  <p class="font-semibold text-gray-900">{{ form.material.material_name || form.material.name }}</p>
+                  <p class="text-sm text-gray-600">Code: {{ form.material.material_code || form.material.material_id }}</p>
                 </div>
               </div>
             </div>

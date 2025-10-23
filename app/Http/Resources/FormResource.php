@@ -58,8 +58,11 @@ class FormResource extends JsonResource
             'material' => $this->whenLoaded('material', function() {
                 return $this->material ? [
                     'id' => $this->material->id,
-                    'material_code' => $this->material->material_code,
-                    'material_name' => $this->material->material_name,
+                    'material_id' => $this->material->material_id,
+                    'name' => $this->material->name,
+                    // Aliases for backward compatibility
+                    'material_code' => $this->material->material_id,
+                    'material_name' => $this->material->name,
                 ] : null;
             }),
 
