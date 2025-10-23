@@ -17,10 +17,12 @@ class FormResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'form_no' => $this->form_no,
             'form_name' => $this->form_name,
             'schedule_date' => $this->schedule_date,
             'schedule_date_formatted' => $this->schedule_date ? Carbon::parse($this->schedule_date)->format('M d, Y') : null,
+            'excepted_qty' => $this->excepted_qty,
+            'description' => $this->description,
+            'form_status' => $this->form_status,
             'status' => $this->status,
             'status_label' => $this->getStatusLabel(),
             
@@ -28,57 +30,65 @@ class FormResource extends JsonResource
             'section' => $this->whenLoaded('section', function() {
                 return [
                     'id' => $this->section->id,
-                    'section_no' => $this->section->section_no,
-                    'section_name' => $this->section->section_name,
+                    'section_id' => $this->section->section_id,
+                    'section_no' => $this->section->section_no ?? null,
                     'order' => $this->section->order ? [
                         'id' => $this->section->order->id,
                         'job_card_no' => $this->section->order->job_card_no,
-                        'client_name' => $this->section->order->client_name,
-                        'title' => $this->section->order->title,
+                        'client_name' => $this->section->order->client_name ?? null,
+                        'title' => $this->section->order->title ?? null,
                     ] : null,
                 ];
             }),
 
-            // Machine with type
-            'machine' => $this->whenLoaded('machine', function() {
-                return $this->machine ? [
-                    'id' => $this->machine->id,
-                    'machine_id' => $this->machine->machine_id,
-                    'machine_name' => $this->machine->machine_name,
-                    'machine_type' => $this->machine->machineType ? [
-                        'id' => $this->machine->machineType->id,
-                        'name' => $this->machine->machineType->name,
-                    ] : null,
-                ] : null;
-            }),
-
-            // Operators
-            'operators' => $this->whenLoaded('formUserAssignments', function() {
-                return $this->formUserAssignments->map(function($assignment) {
+            // Multiple machines (many-to-many)
+            'machines' => $this->whenLoaded('machines', function() {
+                return $this->machines->map(function($machine) {
                     return [
-                        'id' => $assignment->user->id,
-                        'name' => $assignment->user->name,
-                        'emp_code' => $assignment->user->emp_code,
-                        'department' => $assignment->user->department->name ?? 'N/A',
+                        'id' => $machine->id,
+                        'machine_no' => $machine->machine_no,
+                        'machine_name' => $machine->machine_name,
+                        'is_active' => $machine->pivot->is_active ?? false,
+                        'selected_at' => $machine->pivot->selected_at ?? null,
                     ];
                 });
             }),
 
-            // Materials with quantities
-            'materials' => $this->whenLoaded('formMaterialAssignments', function() {
-                return $this->formMaterialAssignments->map(function($assignment) {
+            // Single material (belongs-to)
+            'material' => $this->whenLoaded('material', function() {
+                return $this->material ? [
+                    'id' => $this->material->id,
+                    'material_code' => $this->material->material_code,
+                    'material_name' => $this->material->material_name,
+                ] : null;
+            }),
+
+            // Material ID for form updates
+            'material_id' => $this->material_id,
+
+            // Operators/Users (many-to-many)
+            'users' => $this->whenLoaded('users', function() {
+                return $this->users->map(function($user) {
                     return [
-                        'id' => $assignment->material->id,
-                        'material_name' => $assignment->material->material_name,
-                        'material_code' => $assignment->material->material_code,
-                        'quantity_assigned' => $assignment->quantity_assigned,
-                        'quantity_consumed' => $assignment->quantity_consumed ?? 0, // For future DMI data
+                        'id' => $user->id,
+                        'name' => $user->name,
+                        'user_name' => $user->user_name ?? $user->name,
+                        'emp_code' => $user->emp_code ?? null,
+                        'is_working' => $user->pivot->is_working ?? false,
+                        'worked_at' => $user->pivot->worked_at ?? null,
                     ];
                 });
             }),
 
             // Button actions count
-            'button_actions_count' => $this->formButtonActions ? $this->formButtonActions->count() : 0,
+            'button_actions_count' => $this->whenLoaded('formButtonActions', function() {
+                return $this->formButtonActions->count();
+            }),
+
+            // DMI data count
+            'dmi_data_count' => $this->whenLoaded('dmiData', function() {
+                return $this->dmiData->count();
+            }),
             
             // Timestamps
             'created_at' => $this->created_at?->toDateTimeString(),
@@ -104,6 +114,6 @@ class FormResource extends JsonResource
             'line_cleared' => 'Line Cleared',
         ];
 
-        return $labels[$this->status] ?? $this->status;
+        return $labels[$this->form_status] ?? $this->form_status;
     }
 }
